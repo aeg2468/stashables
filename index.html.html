@@ -1,0 +1,2691 @@
+<!DOCTYPE html>
+<html lang="en"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIwNjc2MDM0MDg3NTkyMTM5NTg4OSIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjX2FlY2JjZWRlMDk1YjAzNTNfc3Rhc2hhYmxlcy0zZC1leHBsb3Jlci5odG1sLTU4NCJ9LCJleHAiOjE3OTUxMjkxODAsImlhdCI6MTc5NTEyNTU4MCwiYWxnIjoiUlMyNTYifQ.F7_Mhzo7ywlTyL02pjM8vbmDZDR369lp_IjYIoMUYUsW1l1XAsmAtBqEsfcmcvBqUe24mKUoL_8hJnbZgwoAoP91zoBM8G21AslzbJ2hFpeHkMTrrnXBln2qNUzywg8Qyohy6dPSo7Adaqqxv79QqTPYMJnIShY0sj4BKbuYQmXNHsY4QmQ0HsJYlLlYujJa2F8VxfQIiK65QqXNXz5f0LU1BevnLE-PNypssbyVmNB8UxIVOvb_S9uWtjtbvH5FfNqUttJyG70bG-bwkodNvqBTGmy4twnB4_mApzIYSGcNtm7OZs-Z0eY55DogDo4T2HQan12pQ8np6E0l6_CYSA","c_aecbcede095b0353_stashables-3d-explorer.html-584")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.i=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.extensions="";var l=0,t=null,r=null,q=[],F=new TextEncoder,
+G=new TextDecoder;c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*
+16|0;return(f==="x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;
+(g=t)==null||g.postMessage(a)}};Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const OVERLAY_SELECTOR =
+    'dialog[open], [role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="combobox"]';
+
+  function isVisibleOverlay(element) {
+    if (element.closest('[hidden], [aria-hidden="true"], [inert]')) {
+      return false;
+    }
+    if (window.getComputedStyle(element).visibility === 'hidden') {
+      return false;
+    }
+    for (let cur = element; cur; cur = cur.parentElement) {
+      if (window.getComputedStyle(cur).display === 'none') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function hasOpenOverlay() {
+    const candidates = document.querySelectorAll(OVERLAY_SELECTOR);
+    for (let i = 0; i < candidates.length; i++) {
+      if (isVisibleOverlay(candidates[i])) {
+        return true;
+      }
+    }
+    try {
+      if (document.querySelector('[popover]:popover-open')) {
+        return true;
+      }
+    } catch (e) {
+      // Ignore engines that do not support :popover-open.
+    }
+    return false;
+  }
+
+  function isNonEmptySearchInput(target) {
+    return (
+      Boolean(target) &&
+      target.tagName === 'INPUT' &&
+      typeof target.type === 'string' &&
+      target.type.toLowerCase() === 'search' &&
+      typeof target.value === 'string' &&
+      target.value.length > 0
+    );
+  }
+
+  function shouldIgnoreEscape(event) {
+    return (
+      event.key !== 'Escape' ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.isComposing ||
+      event.repeat ||
+      event.keyCode === 229 ||
+      isNonEmptySearchInput(event.target)
+    );
+  }
+
+  let shouldIgnoreCaptureState = false;
+
+  window.addEventListener(
+    'keydown',
+    function(event) {
+      if (event.key === 'Escape') {
+        shouldIgnoreCaptureState =
+          hasOpenOverlay() || isNonEmptySearchInput(event.target);
+      }
+    },
+    {capture: true},
+  );
+
+  window.addEventListener('keydown', function(event) {
+    if (
+      shouldIgnoreEscape(event) ||
+      event.defaultPrevented ||
+      shouldIgnoreCaptureState
+    ) {
+      return;
+    }
+    const wasBlockedOnCapture = shouldIgnoreCaptureState;
+    queueMicrotask(function() {
+      if (event.defaultPrevented || wasBlockedOnCapture) {
+        return;
+      }
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({'type': 'escapeKey'}, '*');
+      }
+    });
+  });
+})();</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stashables Lunch Container — Interactive 3D Product Explorer</title>
+
+  <!-- Google Fonts matching the Stashables brand identity -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500;1,600&amp;family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,600;0,700;1,500&amp;display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            mint: {
+              light: '#E3F3F2',
+              DEFAULT: '#9DD1CE',
+              dark: '#7BB8B4',
+            },
+            tealbrand: {
+              DEFAULT: '#1A6B76',
+              dark: '#124E57',
+              light: '#288996',
+            },
+            ochre: {
+              DEFAULT: '#D49A3A',
+              light: '#F3E3C7',
+              dark: '#B57F26',
+            },
+            cream: {
+              DEFAULT: '#F8F9F8',
+              warm: '#F5E6D3',
+            }
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            script: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            sans: ['"Inter"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Three.js r128 + OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" crossorigin="anonymous"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F8F9F8;
+      color: #1A6B76;
+      overflow-x: hidden;
+    }
+
+    /* Custom subtle scrollbars for side control panel */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F0F6F6;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #9DD1CE;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #1A6B76;
+    }
+
+    /* Range slider styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 9999px;
+      background: #D5ECEB;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 9999px;
+      background: #1A6B76;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 2px 5px rgba(26, 107, 118, 0.35);
+      margin-top: -6px;
+      transition: transform 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+    }
+
+    #canvas-container canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+      outline: none;
+    }
+
+    .scallop-badge {
+      box-shadow: 0 10px 25px -5px rgba(26, 107, 118, 0.15);
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:"Inter", system-ui, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.pointer-events-auto{pointer-events:auto}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.bottom-0{bottom:0px}.left-0{left:0px}.left-1\/2{left:50%}.top-0{top:0px}.z-10{z-index:10}.z-20{z-index:20}.mx-auto{margin-left:auto;margin-right:auto}.-mt-0\.5{margin-top:-0.125rem}.mb-2{margin-bottom:0.5rem}.mb-2\.5{margin-bottom:0.625rem}.mt-1{margin-top:0.25rem}.mt-2\.5{margin-top:0.625rem}.mt-auto{margin-top:auto}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.aspect-\[4\.22\/2\.72\]{aspect-ratio:4.22/2.72}.h-1{height:0.25rem}.h-12{height:3rem}.h-2\.5{height:0.625rem}.h-4{height:1rem}.h-7{height:1.75rem}.h-9{height:2.25rem}.h-\[58vh\]{height:58vh}.h-full{height:100%}.min-h-screen{min-height:100vh}.w-12{width:3rem}.w-14{width:3.5rem}.w-2\.5{width:0.625rem}.w-24{width:6rem}.w-3\.5{width:0.875rem}.w-4{width:1rem}.w-7{width:1.75rem}.w-8{width:2rem}.w-9{width:2.25rem}.w-full{width:100%}.max-w-\[92\%\]{max-width:92%}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\/2{--tw-translate-y:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-110{--tw-scale-x:1.1;--tw-scale-y:1.1;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.cursor-grab{cursor:grab}.cursor-move{cursor:move}.touch-none{touch-action:none}.select-none{-webkit-user-select:none;user-select:none}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.items-baseline{align-items:baseline}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-3\.5{gap:0.875rem}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.625rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-l{border-left-width:1px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-\[\#1A6B76\]{--tw-border-opacity:1;border-color:rgb(26 107 118 / var(--tw-border-opacity, 1))}.border-\[\#1A6B76\]\/35{border-color:rgb(26 107 118 / 0.35)}.border-\[\#1A6B76\]\/70{border-color:rgb(26 107 118 / 0.7)}.border-\[\#9DD1CE\]{--tw-border-opacity:1;border-color:rgb(157 209 206 / var(--tw-border-opacity, 1))}.border-\[\#9DD1CE\]\/40{border-color:rgb(157 209 206 / 0.4)}.border-\[\#9DD1CE\]\/50{border-color:rgb(157 209 206 / 0.5)}.border-\[\#9DD1CE\]\/60{border-color:rgb(157 209 206 / 0.6)}.border-\[\#D49A3A\]{--tw-border-opacity:1;border-color:rgb(212 154 58 / var(--tw-border-opacity, 1))}.border-\[\#D49A3A\]\/50{border-color:rgb(212 154 58 / 0.5)}.border-\[\#D49A3A\]\/60{border-color:rgb(212 154 58 / 0.6)}.border-slate-200\/80{border-color:rgb(226 232 240 / 0.8)}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.bg-\[\#1A6B76\]{--tw-bg-opacity:1;background-color:rgb(26 107 118 / var(--tw-bg-opacity, 1))}.bg-\[\#9DD1CE\]{--tw-bg-opacity:1;background-color:rgb(157 209 206 / var(--tw-bg-opacity, 1))}.bg-\[\#9DD1CE\]\/40{background-color:rgb(157 209 206 / 0.4)}.bg-\[\#D49A3A\]{--tw-bg-opacity:1;background-color:rgb(212 154 58 / var(--tw-bg-opacity, 1))}.bg-\[\#E3F3F2\]{--tw-bg-opacity:1;background-color:rgb(227 243 242 / var(--tw-bg-opacity, 1))}.bg-\[\#E3F3F2\]\/50{background-color:rgb(227 243 242 / 0.5)}.bg-\[\#E3F3F2\]\/70{background-color:rgb(227 243 242 / 0.7)}.bg-\[\#F5E6D3\]\/70{background-color:rgb(245 230 211 / 0.7)}.bg-\[\#F5E6D3\]\/80{background-color:rgb(245 230 211 / 0.8)}.bg-\[\#F8F9F8\]{--tw-bg-opacity:1;background-color:rgb(248 249 248 / var(--tw-bg-opacity, 1))}.bg-slate-200{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/80{background-color:rgb(255 255 255 / 0.8)}.bg-white\/90{background-color:rgb(255 255 255 / 0.9)}.bg-white\/95{background-color:rgb(255 255 255 / 0.95)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.from-\[\#F8F9F8\]{--tw-gradient-from:#F8F9F8 var(--tw-gradient-from-position);--tw-gradient-to:rgb(248 249 248 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-\[\#EBF5F4\]{--tw-gradient-to:rgb(235 245 244 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #EBF5F4 var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-\[\#F5E6D3\]{--tw-gradient-to:#F5E6D3 var(--tw-gradient-to-position)}.p-1{padding:0.25rem}.p-1\.5{padding:0.375rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-5{padding:1.25rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-4{padding-bottom:1rem}.pt-1{padding-top:0.25rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-script{font-family:"Cormorant Garamond", Georgia, serif}.font-serif{font-family:"Playfair Display", Georgia, serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-\[8px\]{font-size:8px}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.font-extrabold{font-weight:800}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wide{letter-spacing:0.025em}.tracking-wider{letter-spacing:0.05em}.text-\[\#1A6B76\]{--tw-text-opacity:1;color:rgb(26 107 118 / var(--tw-text-opacity, 1))}.text-\[\#1A6B76\]\/70{color:rgb(26 107 118 / 0.7)}.text-\[\#1A6B76\]\/75{color:rgb(26 107 118 / 0.75)}.text-\[\#1A6B76\]\/80{color:rgb(26 107 118 / 0.8)}.text-\[\#D49A3A\]{--tw-text-opacity:1;color:rgb(212 154 58 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.underline-offset-2{text-underline-offset:2px}.opacity-20{opacity:0.2}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.ring-2{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-\[\#D49A3A\]{--tw-ring-opacity:1;--tw-ring-color:rgb(212 154 58 / var(--tw-ring-opacity, 1))}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:bg-\[\#124E57\]:hover{--tw-bg-opacity:1;background-color:rgb(18 78 87 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#9DD1CE\]\/60:hover{background-color:rgb(157 209 206 / 0.6)}.hover\:bg-\[\#9DD1CE\]\/70:hover{background-color:rgb(157 209 206 / 0.7)}.hover\:bg-\[\#B57F26\]:hover{--tw-bg-opacity:1;background-color:rgb(181 127 38 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#E3F3F2\]:hover{--tw-bg-opacity:1;background-color:rgb(227 243 242 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#E3F3F2\]\/40:hover{background-color:rgb(227 243 242 / 0.4)}.hover\:bg-\[\#E3F3F2\]\/60:hover{background-color:rgb(227 243 242 / 0.6)}.hover\:bg-\[\#F5E6D3\]:hover{--tw-bg-opacity:1;background-color:rgb(245 230 211 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#F5E6D3\]\/60:hover{background-color:rgb(245 230 211 / 0.6)}.hover\:bg-\[\#F8F9F8\]:hover{--tw-bg-opacity:1;background-color:rgb(248 249 248 / var(--tw-bg-opacity, 1))}.hover\:bg-\[\#288996\]:hover{--tw-bg-opacity:1;background-color:rgb(40 137 150 / var(--tw-bg-opacity, 1))}.hover\:text-\[\#D49A3A\]:hover{--tw-text-opacity:1;color:rgb(212 154 58 / var(--tw-text-opacity, 1))}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.active\:cursor-grabbing:active{cursor:grabbing}@media (min-width: 640px){.sm\:block{display:block}.sm\:inline-block{display:inline-block}.sm\:inline{display:inline}.sm\:h-\[64vh\]{height:64vh}.sm\:w-32{width:8rem}.sm\:p-6{padding:1.5rem}.sm\:px-8{padding-left:2rem;padding-right:2rem}.sm\:pt-5{padding-top:1.25rem}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}.sm\:text-xl{font-size:1.25rem;line-height:1.75rem}}@media (min-width: 1024px){.lg\:h-full{height:100%}.lg\:h-screen{height:100vh}.lg\:w-\[32\%\]{width:32%}.lg\:w-\[68\%\]{width:68%}.lg\:flex-row{flex-direction:row}.lg\:overflow-hidden{overflow:hidden}.lg\:border-b-0{border-bottom-width:0px}.lg\:border-r{border-right-width:1px}}@media (min-width: 1280px){.xl\:w-\[30\%\]{width:30%}.xl\:w-\[70\%\]{width:70%}}</style></head>
+<body class="min-h-screen flex flex-col lg:h-screen lg:overflow-hidden select-none">
+
+  <!-- Main Workspace Wrapper -->
+  <div class="flex-1 flex flex-col lg:flex-row h-full w-full">
+
+    <!-- LEFT / CENTER: 3D Interactive Stage (70% width on desktop) -->
+    <main class="relative w-full lg:w-[68%] xl:w-[70%] h-[58vh] sm:h-[64vh] lg:h-full bg-gradient-to-br from-[#F8F9F8] via-[#EBF5F4] to-[#F5E6D3] flex flex-col justify-between overflow-hidden border-b lg:border-b-0 lg:border-r border-[#9DD1CE]/40">
+
+      <!-- Left Decorative Brand Ribbon (inspired by left promotional poster) -->
+      <div class="hidden sm:block absolute left-0 top-0 bottom-0 w-4 bg-[#9DD1CE] z-10 pointer-events-none"></div>
+
+      <!-- Top Floating Header & Scalloped Logo Emblem -->
+      <header class="relative z-20 flex flex-wrap items-center justify-between gap-3 px-4 sm:px-8 pt-4 sm:pt-5 pointer-events-none">
+        <div class="flex items-center gap-3.5 pointer-events-auto bg-white/90 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-sm border border-[#9DD1CE]/50">
+          <!-- Custom SVG Leafy "S" Scalloped Emblem -->
+          <div class="w-12 h-12 rounded-full bg-[#F8F9F8] border-2 border-[#9DD1CE] flex items-center justify-center scallop-badge shrink-0">
+            <svg viewBox="0 0 64 64" class="w-9 h-9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Stashables Logo">
+              <!-- Scalloped outer ring -->
+              <circle cx="32" cy="32" r="29" stroke="#9DD1CE" stroke-width="1.5" stroke-dasharray="3 3"></circle>
+              <!-- Bold Serif S -->
+              <text x="15" y="44" fill="#1A6B76" font-family="Playfair Display, Georgia, serif" font-weight="700" font-size="38">S</text>
+              <!-- Botanical Leaves sprouting from right side of S -->
+              <path d="M39 36C44 33 49 26 51 19" stroke="#28A9B8" stroke-width="2" stroke-linecap="round"></path>
+              <path d="M43 32C47 32 51 30 53 27C49 27 45 29 43 32Z" fill="#28A9B8"></path>
+              <path d="M46 26C50 26 54 24 55 21C51 21 48 23 46 26Z" fill="#52C4D0"></path>
+              <path d="M42 25C41 21 42 17 45 15C46 19 45 23 42 25Z" fill="#1A6B76"></path>
+              <path d="M40 38C45 39 49 38 52 36C48 35 44 35 40 38Z" fill="#77D4DC"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-baseline gap-2">
+              <h1 class="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[#1A6B76] leading-none">Stashables</h1>
+              <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-[#D49A3A] text-white rounded-full">3D Interactive</span>
+            </div>
+            <p class="font-script italic text-lg sm:text-xl text-[#D49A3A] font-semibold leading-tight -mt-0.5">Lunch Container</p>
+          </div>
+        </div>
+
+        <!-- Quick State Action Pills (Open/Close Lid & Sample Lunch) -->
+        <div class="flex items-center gap-2 pointer-events-auto">
+          <button id="btn-toggle-lid" class="px-3.5 py-2 rounded-xl bg-[#1A6B76] hover:bg-[#124E57] text-white text-xs sm:text-sm font-semibold shadow-md transition flex items-center gap-1.5 active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"></path></svg>
+            <span id="lid-btn-label">Close Lid</span>
+          </button>
+
+          <button id="btn-toggle-food" class="px-3.5 py-2 rounded-xl bg-white/95 hover:bg-[#F5E6D3] text-[#1A6B76] border border-[#9DD1CE] text-xs sm:text-sm font-semibold shadow-sm transition flex items-center gap-1.5 active:scale-95">
+            <span>🥗</span>
+            <span id="food-btn-label">Fill Sample Lunch</span>
+          </button>
+
+          <button id="btn-copy-embed" class="px-3.5 py-2 rounded-xl bg-[#1A6B76] hover:bg-[#124E57] text-white text-xs sm:text-sm font-semibold shadow-sm transition flex items-center gap-1.5 active:scale-95" title="Copy full HTML code to paste into Google Sites Embed">
+            <span>📋</span>
+            <span id="copy-embed-label">Copy for Google Sites</span>
+          </button>
+
+          <button id="btn-download-html" class="px-3.5 py-2 rounded-xl bg-[#D49A3A] hover:bg-[#B57F26] text-white text-xs sm:text-sm font-semibold shadow-sm transition flex items-center gap-1.5 active:scale-95" title="Save standalone HTML file">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span class="hidden sm:inline">Save File</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- 3D WebGL Canvas Container -->
+      <div id="canvas-container" class="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"><canvas width="708" height="424" style="display: block; width: 354px; height: 212px;"></canvas></div>
+
+      <!-- Contextual 3D Callout Toast / Tooltip Banner -->
+      <div id="scene-callout" class="relative z-20 mx-auto mt-auto mb-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-md border border-[#9DD1CE] shadow-md text-xs sm:text-sm text-[#1A6B76] font-medium flex items-center gap-2 max-w-[92%] text-center transition-all duration-300">
+        <span class="w-2.5 h-2.5 rounded-full bg-[#D49A3A] animate-pulse shrink-0"></span>
+        <span id="callout-text">Drag any divider anywhere inside the tray • Double-click a divider to rotate • Click Canister or Ice Pack to remove!</span>
+      </div>
+
+      <!-- Bottom Camera Angle & Exploded View Bar -->
+      <footer class="relative z-20 px-4 sm:px-8 pb-4 pt-1 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
+        <!-- Camera Presets -->
+        <div class="flex flex-wrap items-center gap-1.5 bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-[#9DD1CE]/60 shadow-sm pointer-events-auto">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#1A6B76]/70 px-2 hidden sm:inline">View:</span>
+          <button data-cam="hero" class="cam-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-[#1A6B76] text-white transition">3/4 Hero</button>
+          <button data-cam="top" class="cam-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold text-[#1A6B76] hover:bg-[#E3F3F2] transition">Top-Down</button>
+          <button data-cam="icepack" class="cam-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold text-[#1A6B76] hover:bg-[#E3F3F2] transition">Ice Pack Slot</button>
+          <button data-cam="front" class="cam-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold text-[#1A6B76] hover:bg-[#E3F3F2] transition">Front Latches</button>
+        </div>
+
+        <!-- Exploded View Slider -->
+        <div class="flex items-center gap-3 bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-[#9DD1CE]/60 shadow-sm pointer-events-auto">
+          <label for="explode-slider" class="text-xs font-semibold text-[#1A6B76] whitespace-nowrap flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-[#D49A3A]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+            Exploded View
+          </label>
+          <input id="explode-slider" type="range" min="0" max="100" value="0" class="w-24 sm:w-32">
+          <span id="explode-val" class="text-xs font-bold text-[#D49A3A] w-8 text-right">0%</span>
+        </div>
+      </footer>
+    </main>
+
+    <!-- RIGHT: Interactive Feature Explorer & Divider Builder Panel (30% width on desktop) -->
+    <aside class="w-full lg:w-[32%] xl:w-[30%] lg:h-full bg-white flex flex-col justify-between overflow-y-auto">
+
+      <div class="p-5 sm:p-6 space-y-5">
+        <!-- Container Color Swatch Selector -->
+        <div class="p-3 rounded-2xl bg-[#F8F9F8] border border-[#9DD1CE]/60 flex items-center justify-between gap-2">
+          <div>
+            <span class="block text-[11px] font-bold uppercase tracking-wider text-[#1A6B76]/75">Container Finish</span>
+            <span id="colorway-name" class="text-xs font-bold text-[#1A6B76]">Seafoam Mint &amp; Deep Teal</span>
+          </div>
+          <div class="flex items-center gap-2" id="color-swatch-bar">
+            <button data-colorway="mint" class="swatch-btn w-7 h-7 rounded-full border-2 border-[#1A6B76] ring-2 ring-[#D49A3A] shadow-sm transition transform scale-110" style="background: linear-gradient(135deg, #9DD1CE 55%, #1A6B76 55%);" title="Seafoam Mint &amp; Deep Teal (Signature)"></button>
+            <button data-colorway="iceblue" class="swatch-btn w-7 h-7 rounded-full border-2 border-white shadow-sm hover:scale-105 transition" style="background: linear-gradient(135deg, #ADC4D9 55%, #4A607A 55%);" title="Ice Blue &amp; Slate"></button>
+            <button data-colorway="ochre" class="swatch-btn w-7 h-7 rounded-full border-2 border-white shadow-sm hover:scale-105 transition" style="background: linear-gradient(135deg, #EAD7BC 55%, #C98A2C 55%);" title="Warm Cream &amp; Ochre Gold"></button>
+            <button data-colorway="blush" class="swatch-btn w-7 h-7 rounded-full border-2 border-white shadow-sm hover:scale-105 transition" style="background: linear-gradient(135deg, #E8B8B2 55%, #8F4A4E 55%);" title="Blush Rose &amp; Berry"></button>
+          </div>
+        </div>
+
+        <!-- Feature Navigation Tabs -->
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#1A6B76]/70">Explore Product Features</span>
+            <span class="text-[11px] font-medium text-[#D49A3A] bg-[#F5E6D3]/70 px-2.5 py-0.5 rounded-full">4 Core Innovations</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2" id="feature-tabs">
+            <button data-tab="dividers" class="tab-btn active flex items-center gap-2 p-2.5 rounded-xl border-2 border-[#1A6B76] bg-[#E3F3F2]/70 text-left transition">
+              <span class="w-7 h-7 rounded-lg bg-[#1A6B76] text-white flex items-center justify-center shrink-0 text-sm">⊞</span>
+              <div>
+                <div class="text-xs font-bold text-[#1A6B76] leading-tight">Interchangeable</div>
+                <div class="text-[11px] text-[#1A6B76]/80">Dividers</div>
+              </div>
+            </button>
+
+            <button data-tab="thermal" class="tab-btn flex items-center gap-2 p-2.5 rounded-xl border border-[#9DD1CE]/60 bg-[#F8F9F8] hover:bg-[#E3F3F2]/40 text-left transition">
+              <span class="w-7 h-7 rounded-lg bg-[#9DD1CE] text-[#1A6B76] flex items-center justify-center shrink-0 text-sm">❄️</span>
+              <div>
+                <div class="text-xs font-bold text-[#1A6B76] leading-tight">Hot &amp; Cold</div>
+                <div class="text-[11px] text-[#1A6B76]/80">Insulation</div>
+              </div>
+            </button>
+
+            <button data-tab="seal" class="tab-btn flex items-center gap-2 p-2.5 rounded-xl border border-[#9DD1CE]/60 bg-[#F8F9F8] hover:bg-[#E3F3F2]/40 text-left transition">
+              <span class="w-7 h-7 rounded-lg bg-[#9DD1CE] text-[#1A6B76] flex items-center justify-center shrink-0 text-sm">💧</span>
+              <div>
+                <div class="text-xs font-bold text-[#1A6B76] leading-tight">Leak-Proof</div>
+                <div class="text-[11px] text-[#1A6B76]/80">Silicone Seal</div>
+              </div>
+            </button>
+
+            <button data-tab="care" class="tab-btn flex items-center gap-2 p-2.5 rounded-xl border border-[#9DD1CE]/60 bg-[#F8F9F8] hover:bg-[#E3F3F2]/40 text-left transition">
+              <span class="w-7 h-7 rounded-lg bg-[#9DD1CE] text-[#1A6B76] flex items-center justify-center shrink-0 text-sm">♨️</span>
+              <div>
+                <div class="text-xs font-bold text-[#1A6B76] leading-tight">Microwave &amp;</div>
+                <div class="text-[11px] text-[#1A6B76]/80">Dishwasher Safe</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- PANEL 1: INTERCHANGEABLE DIVIDERS -->
+        <section id="panel-dividers" class="feature-panel space-y-4">
+          <div class="p-3.5 rounded-2xl bg-[#F8F9F8] border border-[#9DD1CE]/50">
+            <h2 class="font-serif text-lg font-bold text-[#1A6B76]">Freeform Divider Studio</h2>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+              Create <strong>Small</strong>, <strong>Medium</strong>, or <strong>Large</strong> dividers and drag them anywhere inside the tray (in 3D or on the blueprint below). Double-click or press <kbd class="px-1 py-0.5 bg-white border border-slate-300 rounded text-[10px] font-bold">R</kbd> to rotate!
+            </p>
+          </div>
+
+          <!-- 3-Size Creation Buttons (Small, Medium, Large) -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-[#1A6B76]/80 mb-2">Add Divider by Size</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button data-add-size="S" class="add-size-btn py-2 px-2 rounded-xl text-xs font-bold bg-[#1A6B76] hover:bg-[#124E57] text-white shadow-sm transition flex flex-col items-center justify-center gap-1 active:scale-95">
+                <div class="flex items-center gap-1">
+                  <span>＋</span>
+                  <span>Small</span>
+                </div>
+                <span class="block w-3.5 h-1 rounded-full bg-[#9DD1CE]"></span>
+              </button>
+
+              <button data-add-size="M" class="add-size-btn py-2 px-2 rounded-xl text-xs font-bold bg-[#1A6B76] hover:bg-[#124E57] text-white shadow-sm transition flex flex-col items-center justify-center gap-1 active:scale-95">
+                <div class="flex items-center gap-1">
+                  <span>＋</span>
+                  <span>Medium</span>
+                </div>
+                <span class="block w-7 h-1 rounded-full bg-[#9DD1CE]"></span>
+              </button>
+
+              <button data-add-size="L" class="add-size-btn py-2 px-2 rounded-xl text-xs font-bold bg-[#1A6B76] hover:bg-[#124E57] text-white shadow-sm transition flex flex-col items-center justify-center gap-1 active:scale-95">
+                <div class="flex items-center gap-1">
+                  <span>＋</span>
+                  <span>Large</span>
+                </div>
+                <span class="block w-14 h-1 rounded-full bg-[#D49A3A]"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Selected Divider Controls: Size Switcher [S / M / L], Rotate, Remove -->
+          <div class="p-3 rounded-2xl bg-[#F8F9F8] border border-[#9DD1CE]/60 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-[#1A6B76]">Selected Size:</span>
+              <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-[#9DD1CE]/60">
+                <button data-set-size="S" class="size-toggle-btn px-2.5 py-1 rounded-lg text-xs font-bold text-[#1A6B76] hover:bg-[#E3F3F2] transition">S</button>
+                <button data-set-size="M" class="size-toggle-btn px-2.5 py-1 rounded-lg text-xs font-bold text-[#1A6B76] hover:bg-[#E3F3F2] transition">M</button>
+                <button data-set-size="L" class="size-toggle-btn px-2.5 py-1 rounded-lg text-xs font-bold text-[#1A6B76] hover:bg-[#E3F3F2] transition">L</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-1.5">
+              <button id="btn-rotate-selected" class="py-2 px-2 rounded-xl text-xs font-bold bg-[#D49A3A] hover:bg-[#B57F26] text-white shadow-sm transition flex items-center justify-center gap-1 active:scale-95">
+                <span>↻</span> Rotate
+              </button>
+              <button id="btn-deselect-wall" class="py-2 px-2 rounded-xl text-xs font-bold bg-white hover:bg-[#E3F3F2] text-[#1A6B76] border border-[#9DD1CE] transition flex items-center justify-center gap-1 active:scale-95">
+                <span>○</span> Deselect
+              </button>
+              <button id="btn-remove-selected" class="py-2 px-2 rounded-xl text-xs font-bold bg-[#E3F3F2] hover:bg-[#9DD1CE]/70 text-[#1A6B76] transition flex items-center justify-center gap-1 active:scale-95">
+                <span>✕</span> Remove
+              </button>
+            </div>
+          </div>
+
+          <!-- Preset Layouts -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-[#1A6B76]/80 mb-2">Quick Layout Presets</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button data-preset="standard" class="preset-btn py-2 px-2 rounded-xl text-xs font-semibold bg-[#1A6B76] text-white shadow-sm transition">
+                Standard Bento
+              </button>
+              <button data-preset="snack" class="preset-btn py-2 px-2 rounded-xl text-xs font-semibold bg-[#E3F3F2] text-[#1A6B76] hover:bg-[#9DD1CE]/60 transition">
+                6-Snack Box
+              </button>
+              <button data-preset="open" class="preset-btn py-2 px-2 rounded-xl text-xs font-semibold bg-[#E3F3F2] text-[#1A6B76] hover:bg-[#9DD1CE]/60 transition">
+                Open Entrée
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive 2D Freeform Drag Blueprint -->
+          <div class="p-3.5 rounded-2xl bg-[#E3F3F2]/50 border border-[#9DD1CE]">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-[#1A6B76]">2D Freeform Tray Canvas</span>
+              <span id="selected-div-label" class="text-[11px] font-semibold text-[#D49A3A]">Drag walls freely</span>
+            </div>
+
+            <!-- Interactive 2D tray drag surface -->
+            <div id="blueprint-tray" class="relative w-full aspect-[4.22/2.72] bg-white/80 rounded-xl border-2 border-[#1A6B76] overflow-hidden touch-none">
+              <!-- Subtle grid guide dots -->
+              <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(#1A6B76 1px, transparent 1px); background-size: 14px 14px;"></div>
+
+              <!-- Horizontal Centerline Guide (shows half-tray span) -->
+              <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 border-l border-dashed border-[#1A6B76]/35 pointer-events-none"></div>
+
+              <!-- Hot Canister footprint indicator (hides when canister is removed!) -->
+              <div id="blueprint-canister-zone" class="absolute rounded-lg bg-[#9DD1CE]/40 border border-dashed border-[#1A6B76]/70 flex items-center justify-center text-[10px] font-bold text-[#1A6B76] text-center px-1 select-none pointer-events-none transition-opacity duration-300" style="left: 3.5%; top: 4.5%; width: 31%; height: 41.5%; opacity: 1;">
+                Hot Canister<br>(Occupied)
+              </div>
+
+              <!-- Dynamic draggable divider handles are rendered here -->
+              <div id="blueprint-dividers-layer" class="absolute inset-0"><div class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full cursor-move transition-colors shadow-sm flex items-center justify-center text-[8px] font-extrabold text-white leading-none bg-[#1A6B76] hover:bg-[#288996] z-10" title="Large (L) Wall — Drag to move, Double-click to rotate" style="left: 49.503555%; top: 50%; width: 98.296209%; height: 6%;">L</div><div class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full cursor-move transition-colors shadow-sm flex items-center justify-center text-[8px] font-extrabold text-white leading-none bg-[#1A6B76] hover:bg-[#288996] z-10" title="Small (S) Wall — Drag to move, Double-click to rotate" style="left: 50%; top: 25.275735%; width: 4.2%; height: 49.448529%;">S</div><div class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full cursor-move transition-colors shadow-sm flex items-center justify-center text-[8px] font-extrabold text-white leading-none bg-[#1A6B76] hover:bg-[#288996] z-10" title="Small (S) Wall — Drag to move, Double-click to rotate" style="left: 70.14218%; top: 74.724265%; width: 4.2%; height: 49.448529%;">S</div></div>
+            </div>
+
+            <div class="mt-2.5 flex items-center justify-between text-[11px] text-[#1A6B76]/80">
+              <span>• Drag in 3D or 2D</span>
+              <span>• Double-click to rotate 90°</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- PANEL 2: HOT & COLD INSULATION -->
+        <section id="panel-thermal" class="feature-panel hidden space-y-4">
+          <div class="p-3.5 rounded-2xl bg-[#F8F9F8] border border-[#9DD1CE]/50">
+            <h2 class="font-serif text-lg font-bold text-[#1A6B76]">Removable Hot &amp; Cold Modules</h2>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+              Slide out &amp; remove the <strong>slim half-width ice pack</strong>, lift out the <strong>square insulated hot canister</strong>, or pop open its screw-seal lid to inspect inside!
+            </p>
+          </div>
+
+          <div class="space-y-2.5">
+            <!-- Remove / Insert Slim Ice Pack Control -->
+            <button id="btn-slide-icepack" class="w-full p-3 rounded-xl bg-[#E3F3F2] hover:bg-[#9DD1CE]/60 border border-[#9DD1CE] flex items-center justify-between transition">
+              <div class="flex items-center gap-2.5 text-left">
+                <span class="text-lg">🧊</span>
+                <div>
+                  <div class="text-xs font-bold text-[#1A6B76]">Slim Half-Width Ice Pack</div>
+                  <div class="text-[11px] text-[#1A6B76]/80">Slide out &amp; place beside container</div>
+                </div>
+              </div>
+              <span id="icepack-status-badge" class="px-2.5 py-1 rounded-lg bg-[#1A6B76] text-white text-[11px] font-bold">Remove</span>
+            </button>
+
+            <!-- Remove / Insert Hot Food Canister Control -->
+            <button id="btn-lift-canister" class="w-full p-3 rounded-xl bg-[#F5E6D3]/70 hover:bg-[#F5E6D3] border border-[#D49A3A]/50 flex items-center justify-between transition">
+              <div class="flex items-center gap-2.5 text-left">
+                <span class="text-lg">🍲</span>
+                <div>
+                  <div class="text-xs font-bold text-[#1A6B76]">Square Hot Food Canister</div>
+                  <div class="text-[11px] text-[#1A6B76]/80">Remove from tray to free up space</div>
+                </div>
+              </div>
+              <span id="canister-status-badge" class="px-2.5 py-1 rounded-lg bg-[#D49A3A] text-white text-[11px] font-bold">Remove</span>
+            </button>
+
+            <!-- Open / Close Hot Canister Lid Control -->
+            <button id="btn-canister-lid" class="w-full p-3 rounded-xl bg-[#F8F9F8] hover:bg-[#E3F3F2]/60 border border-[#9DD1CE] flex items-center justify-between transition">
+              <div class="flex items-center gap-2.5 text-left">
+                <span class="text-lg">🥣</span>
+                <div>
+                  <div class="text-xs font-bold text-[#1A6B76]">Hot Canister Insulated Lid</div>
+                  <div class="text-[11px] text-[#1A6B76]/80">Open canister lid to inspect warm interior</div>
+                </div>
+              </div>
+              <span id="canister-lid-badge" class="px-2.5 py-1 rounded-lg bg-[#1A6B76] text-white text-[11px] font-bold">Open Lid</span>
+            </button>
+
+            <!-- Thermal X-Ray View Toggle -->
+            <button id="btn-xray-thermal" class="w-full p-3 rounded-xl bg-white hover:bg-[#F8F9F8] border-2 border-[#1A6B76] flex items-center justify-between transition">
+              <div class="flex items-center gap-2.5 text-left">
+                <span class="text-lg">🌡️</span>
+                <div>
+                  <div class="text-xs font-bold text-[#1A6B76]">Thermal Insulation X-Ray View</div>
+                  <div class="text-[11px] text-slate-600">Visualize warm &amp; chilled double-wall zones</div>
+                </div>
+              </div>
+              <span id="xray-status-badge" class="px-2.5 py-1 rounded-lg bg-slate-200 text-[#1A6B76] text-[11px] font-bold">OFF</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- PANEL 3: LEAK-PROOF SEAL -->
+        <section id="panel-seal" class="feature-panel hidden space-y-4">
+          <div class="p-3.5 rounded-2xl bg-[#F8F9F8] border border-[#9DD1CE]/50">
+            <h2 class="font-serif text-lg font-bold text-[#1A6B76]">360° Leak-Proof Silicone Gasket</h2>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+              Precision-molded silicone perimeter seal pairs with <strong>4 heavy-duty snap latches</strong> (front, back, and both sides) to lock in sauces, yogurt, and dressings with zero spills.
+            </p>
+          </div>
+
+          <div class="space-y-2.5">
+            <button id="btn-highlight-gasket" class="w-full p-3 rounded-xl bg-[#E3F3F2] hover:bg-[#9DD1CE]/60 border border-[#9DD1CE] flex items-center justify-between transition">
+              <div class="flex items-center gap-2.5 text-left">
+                <span class="text-lg">🛡️</span>
+                <div>
+                  <div class="text-xs font-bold text-[#1A6B76]">Highlight Silicone Perimeter Seal</div>
+                  <div class="text-[11px] text-[#1A6B76]/80">Pulse-glow the compression gasket inside lid</div>
+                </div>
+              </div>
+              <span id="gasket-badge" class="px-2.5 py-1 rounded-lg bg-[#1A6B76] text-white text-[11px] font-bold">Highlight</span>
+            </button>
+
+            <button id="btn-latch-test" class="w-full p-3 rounded-xl bg-white hover:bg-[#F5E6D3]/60 border border-[#D49A3A]/60 flex items-center justify-between transition">
+              <div class="flex items-center gap-2.5 text-left">
+                <span class="text-lg">🔒</span>
+                <div>
+                  <div class="text-xs font-bold text-[#1A6B76]">Test 4-Latch Compression Lock</div>
+                  <div class="text-[11px] text-slate-600">Closes lid and snaps all 4 teal latches shut</div>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-[#D49A3A] text-white text-[11px] font-bold">Snap Shut</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- PANEL 4: MICROWAVE & DISHWASHER SAFE -->
+        <section id="panel-care" class="feature-panel hidden space-y-4">
+          <div class="p-3.5 rounded-2xl bg-[#F8F9F8] border border-[#9DD1CE]/50">
+            <h2 class="font-serif text-lg font-bold text-[#1A6B76]">Microwave &amp; Dishwasher Safe</h2>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+              Crafted from premium, BPA-free, food-grade polypropylene and platinum silicone. Reheat your meal in seconds and place on the top rack of your dishwasher for effortless cleanup.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5">
+            <button id="btn-sim-microwave" class="p-3 rounded-xl bg-[#F5E6D3]/80 hover:bg-[#F5E6D3] border border-[#D49A3A] flex flex-col items-center text-center gap-1.5 transition">
+              <span class="text-2xl">♨️</span>
+              <span class="text-xs font-bold text-[#1A6B76]">Microwave Mode</span>
+              <span class="text-[10px] text-slate-600">Warm glow simulation (remove lid &amp; ice pack)</span>
+            </button>
+
+            <button id="btn-sim-dishwasher" class="p-3 rounded-xl bg-[#E3F3F2] hover:bg-[#9DD1CE]/60 border border-[#9DD1CE] flex flex-col items-center text-center gap-1.5 transition">
+              <span class="text-2xl">🫧</span>
+              <span class="text-xs font-bold text-[#1A6B76]">Dishwasher Rinse</span>
+              <span class="text-[10px] text-slate-600">Top-rack aqua sparkle wash simulation</span>
+            </button>
+          </div>
+
+          <ul class="text-xs text-slate-600 space-y-1.5 bg-[#F8F9F8] p-3 rounded-xl border border-slate-200/80">
+            <li class="flex items-center gap-2"><span class="text-[#1A6B76] font-bold">✓</span> 100% BPA-Free, Phthalate-Free &amp; Food-Safe</li>
+            <li class="flex items-center gap-2"><span class="text-[#1A6B76] font-bold">✓</span> Microwave-safe base &amp; dividers (up to 248°F / 120°C)</li>
+            <li class="flex items-center gap-2"><span class="text-[#1A6B76] font-bold">✓</span> Top-rack dishwasher safe (freeze ice pack separately)</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- Brand Footer Attribution -->
+      <div class="px-6 py-4 bg-[#F8F9F8] border-t border-[#9DD1CE]/40 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-md bg-[#D49A3A] text-white font-semibold tracking-wide">Audra Goldsmith</span>
+          <span class="text-[#1A6B76]/70 font-medium">Product Showcase</span>
+        </div>
+        <button id="btn-reset-all" class="text-[#1A6B76] hover:text-[#D49A3A] font-semibold underline underline-offset-2 transition">
+          Reset 3D Model
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Interactive 3D Application Logic -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // ==========================================
+      // 1. STATE MANAGEMENT
+      // ==========================================
+      const state = {
+        lidOpen: true,
+        lidAngle: 1.48,
+        currentLidAngle: 1.48,
+        icePackRemoved: false,
+        canisterRemoved: false,
+        canisterLidOpen: false,
+        explodeAmount: 0,
+        xrayThermal: false,
+        highlightGasket: false,
+        showFood: false,
+        simMode: 'none',
+        colorway: 'mint',
+        selectedDividerId: null,
+        dividers: []
+      };
+
+      const COLORWAYS = {
+        mint: {
+          name: 'Seafoam Mint & Deep Teal',
+          body: 0x9dd1ce,
+          inner: 0x8bc5c2,
+          accent: 0x1a6b76,
+          ice: 0x77b9c4
+        },
+        iceblue: {
+          name: 'Ice Blue & Slate',
+          body: 0xadc4d9,
+          inner: 0x9ab3ca,
+          accent: 0x4a607a,
+          ice: 0x8cb8d6
+        },
+        ochre: {
+          name: 'Warm Cream & Ochre Gold',
+          body: 0xead7bc,
+          inner: 0xdec6a4,
+          accent: 0xc98a2c,
+          ice: 0x88c5cc
+        },
+        blush: {
+          name: 'Blush Rose & Berry',
+          body: 0xe8b8b2,
+          inner: 0xd9a49e,
+          accent: 0x8f4a4e,
+          ice: 0x88c5cc
+        }
+      };
+
+      // ==========================================
+      // 2. THREE.JS SCENE, CAMERA & LIGHTING SETUP
+      // ==========================================
+      const container = document.getElementById('canvas-container');
+      const scene = new THREE.Scene();
+
+      const camera = new THREE.PerspectiveCamera(
+        38,
+        (container.clientWidth || 800) / (container.clientHeight || 600),
+        0.1,
+        100
+      );
+      camera.position.set(0.2, 6.4, 7.8);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(container.clientWidth || 800, container.clientHeight || 600);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      container.appendChild(renderer.domElement);
+
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.07;
+      controls.maxPolarAngle = Math.PI * 0.48;
+      controls.minDistance = 4.2;
+      controls.maxDistance = 15.0;
+      controls.target.set(0, 0.7, 0);
+
+      // Studio Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.72);
+      scene.add(ambientLight);
+
+      const keyLight = new THREE.DirectionalLight(0xfffaf2, 0.85);
+      keyLight.position.set(5, 10, 7);
+      keyLight.castShadow = true;
+      keyLight.shadow.mapSize.width = 2048;
+      keyLight.shadow.mapSize.height = 2048;
+      keyLight.shadow.camera.near = 1;
+      keyLight.shadow.camera.far = 25;
+      const dShadow = 6.5;
+      keyLight.shadow.camera.left = -dShadow;
+      keyLight.shadow.camera.right = dShadow;
+      keyLight.shadow.camera.top = dShadow;
+      keyLight.shadow.camera.bottom = -dShadow;
+      keyLight.shadow.bias = -0.0005;
+      scene.add(keyLight);
+
+      const fillLight = new THREE.DirectionalLight(0xe3f3f2, 0.45);
+      fillLight.position.set(-6, 5, -4);
+      scene.add(fillLight);
+
+      // Tabletop Shadow Catcher Surface
+      const tablePlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(36, 36),
+        new THREE.ShadowMaterial({ opacity: 0.12 })
+      );
+      tablePlane.rotation.x = -Math.PI / 2;
+      tablePlane.position.y = -0.01;
+      tablePlane.receiveShadow = true;
+      scene.add(tablePlane);
+
+      // ==========================================
+      // 3. BRAND MATERIALS & TEXTURES
+      // ==========================================
+      const matSeafoam = new THREE.MeshStandardMaterial({
+        color: 0x9dd1ce,
+        roughness: 0.42,
+        metalness: 0.04,
+        transparent: true,
+        opacity: 1.0
+      });
+
+      const matSeafoamInner = new THREE.MeshStandardMaterial({
+        color: 0x8bc5c2,
+        roughness: 0.48,
+        metalness: 0.03,
+        transparent: true,
+        opacity: 1.0
+      });
+
+      const matDarkTeal = new THREE.MeshStandardMaterial({
+        color: 0x1a6b76,
+        roughness: 0.35,
+        metalness: 0.06
+      });
+
+      const matSiliconeGasket = new THREE.MeshStandardMaterial({
+        color: 0x1a6b76,
+        roughness: 0.55,
+        emissive: 0xd49a3a,
+        emissiveIntensity: 0
+      });
+
+      const matIcePack = new THREE.MeshStandardMaterial({
+        color: 0x77b9c4,
+        roughness: 0.25,
+        metalness: 0.05,
+        transparent: true,
+        opacity: 0.94
+      });
+
+      function createLogoTexture() {
+        const c = document.createElement('canvas');
+        c.width = 256;
+        c.height = 256;
+        const ctx = c.getContext('2d');
+        ctx.clearRect(0, 0, 256, 256);
+
+        ctx.fillStyle = '#1A6B76';
+        ctx.font = 'bold 170px Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('S', 110, 136);
+
+        ctx.strokeStyle = '#28A9B8';
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(156, 152);
+        ctx.quadraticCurveTo(182, 130, 198, 92);
+        ctx.stroke();
+
+        const leaves = [
+          { x: 185, y: 125, r: 0.3 },
+          { x: 196, y: 102, r: 0.2 },
+          { x: 174, y: 100, r: -0.6 },
+          { x: 180, y: 148, r: 0.6 }
+        ];
+        leaves.forEach((lf, idx) => {
+          ctx.save();
+          ctx.translate(lf.x, lf.y);
+          ctx.rotate(lf.r);
+          ctx.fillStyle = idx % 2 === 0 ? '#1A6B76' : '#28A9B8';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 18, 8, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        const tex = new THREE.CanvasTexture(c);
+        tex.encoding = THREE.sRGBEncoding;
+        return tex;
+      }
+
+      // ==========================================
+      // 4. CONTAINER DIMENSIONS & GEOMETRY HELPERS
+      // ==========================================
+      const BOX_W = 4.56;
+      const BOX_D = 3.06;
+      const BASE_H = 1.18;
+      const LID_H = 0.28;
+      const WALL_T = 0.17;
+      const FLOOR_T = 0.16;
+      const CORNER_R = 0.42;
+
+      const INNER_W = BOX_W - WALL_T * 2;
+      const INNER_D = BOX_D - WALL_T * 2;
+
+      function createRoundedRectShape(w, d, r) {
+        const shape = new THREE.Shape();
+        const hw = w / 2;
+        const hd = d / 2;
+        const radius = Math.min(r, hw, hd);
+        shape.moveTo(-hw + radius, -hd);
+        shape.lineTo(hw - radius, -hd);
+        shape.quadraticCurveTo(hw, -hd, hw, -hd + radius);
+        shape.lineTo(hw, hd - radius);
+        shape.quadraticCurveTo(hw, hd, hw - radius, hd);
+        shape.lineTo(-hw + radius, hd);
+        shape.quadraticCurveTo(-hw, hd, -hw, hd - radius);
+        shape.lineTo(-hw, -hd + radius);
+        shape.quadraticCurveTo(-hw, -hd, -hw + radius, -hd);
+        return shape;
+      }
+
+      const bentoRoot = new THREE.Group();
+      scene.add(bentoRoot);
+
+      // --- A. MAIN BASE SHELL ---
+      const outerShape = createRoundedRectShape(BOX_W, BOX_D, CORNER_R);
+      const innerHole = createRoundedRectShape(INNER_W, INNER_D, CORNER_R - 0.1);
+      outerShape.holes.push(innerHole);
+
+      const wallExtrude = new THREE.ExtrudeGeometry(outerShape, {
+        depth: BASE_H - FLOOR_T,
+        bevelEnabled: true,
+        bevelThickness: 0.04,
+        bevelSize: 0.03,
+        bevelSegments: 4
+      });
+      wallExtrude.rotateX(-Math.PI / 2);
+      const wallsMesh = new THREE.Mesh(wallExtrude, matSeafoam);
+      wallsMesh.position.y = FLOOR_T;
+      wallsMesh.castShadow = true;
+      wallsMesh.receiveShadow = true;
+      bentoRoot.add(wallsMesh);
+
+      const floorShape = createRoundedRectShape(BOX_W - 0.04, BOX_D - 0.04, CORNER_R - 0.02);
+      const floorGeo = new THREE.ExtrudeGeometry(floorShape, {
+        depth: FLOOR_T,
+        bevelEnabled: true,
+        bevelThickness: 0.03,
+        bevelSize: 0.03,
+        bevelSegments: 3
+      });
+      floorGeo.rotateX(-Math.PI / 2);
+      const floorMesh = new THREE.Mesh(floorGeo, matSeafoamInner);
+      floorMesh.position.y = 0.03;
+      floorMesh.castShadow = true;
+      floorMesh.receiveShadow = true;
+      bentoRoot.add(floorMesh);
+
+      // --- B. FLAT & WIDE ICE PACK TUCKED INSIDE LOWER BASE (HIDDEN FROM TOP VIEW) ---
+      const ICE_W = 1.72;
+      const ICE_H = 0.11; // Ultra-flat profile so it hides completely beneath the tray floor
+      const ICE_D = 1.04; // Wider front-to-back footprint inside the lower cooling pocket
+      const ICE_Y = 0.11; // Tucked cleanly inside the lower base floor layer
+      const ICE_Z = 0.42; // Positioned forward on the right side, clear of the side latch
+
+      const ICE_SLOT_POS = new THREE.Vector3(BOX_W / 2 - ICE_W / 2 - 0.04, ICE_Y, ICE_Z);
+      const ICE_REMOVED_POS = new THREE.Vector3(BOX_W / 2 + 1.45, ICE_H / 2 + 0.02, ICE_Z + 0.25);
+
+      const slotBezel = new THREE.Mesh(
+        new THREE.BoxGeometry(0.10, ICE_H + 0.06, ICE_D + 0.12),
+        matDarkTeal
+      );
+      slotBezel.position.set(BOX_W / 2 - 0.01, ICE_Y, ICE_Z);
+      bentoRoot.add(slotBezel);
+
+      const icePackGroup = new THREE.Group();
+      icePackGroup.position.copy(ICE_SLOT_POS);
+      bentoRoot.add(icePackGroup);
+
+      const icePackShape = createRoundedRectShape(ICE_W, ICE_D, 0.12);
+      const icePackGeo = new THREE.ExtrudeGeometry(icePackShape, {
+        depth: ICE_H - 0.02,
+        bevelEnabled: true,
+        bevelThickness: 0.012,
+        bevelSize: 0.015,
+        bevelSegments: 3
+      });
+      icePackGeo.rotateX(-Math.PI / 2);
+      const icePackMesh = new THREE.Mesh(icePackGeo, matIcePack);
+      icePackMesh.position.y = -(ICE_H - 0.02) / 2;
+      icePackMesh.castShadow = true;
+      icePackMesh.receiveShadow = true;
+      icePackMesh.userData = { action: 'toggleIcePack' };
+      icePackGroup.add(icePackMesh);
+
+      const icePullTab = new THREE.Mesh(
+        new THREE.BoxGeometry(0.08, ICE_H - 0.01, ICE_D * 0.62),
+        matDarkTeal
+      );
+      icePullTab.position.set(ICE_W / 2 + 0.04, 0, 0);
+      icePullTab.userData = { action: 'toggleIcePack' };
+      icePackGroup.add(icePullTab);
+
+      // --- C. REMOVABLE SQUARE HOT FOOD CANISTER + OPENABLE LID ---
+      const CAN_W = 1.26;
+      const CAN_D = 1.12; // Slightly shorter front-to-back so a Large horizontal divider passes straight down the middle (Z = 0)
+      const CAN_H = 0.88;
+      const CAN_SLOT_POS = new THREE.Vector3(-1.36, FLOOR_T + 0.04, -0.74);
+      const CAN_REMOVED_POS = new THREE.Vector3(-BOX_W / 2 - 1.25, 0.02, -0.35);
+
+      const canisterGroup = new THREE.Group();
+      canisterGroup.position.copy(CAN_SLOT_POS);
+      bentoRoot.add(canisterGroup);
+
+      const canOuter = createRoundedRectShape(CAN_W, CAN_D, 0.22);
+      const canHole = createRoundedRectShape(CAN_W - 0.20, CAN_D - 0.20, 0.15);
+      canOuter.holes.push(canHole);
+
+      const canWallGeo = new THREE.ExtrudeGeometry(canOuter, {
+        depth: CAN_H - 0.08,
+        bevelEnabled: true,
+        bevelThickness: 0.03,
+        bevelSize: 0.02,
+        bevelSegments: 3
+      });
+      canWallGeo.rotateX(-Math.PI / 2);
+      const canWallMesh = new THREE.Mesh(canWallGeo, matSeafoam);
+      canWallMesh.position.y = 0.08;
+      canWallMesh.castShadow = true;
+      canWallMesh.receiveShadow = true;
+      canWallMesh.userData = { action: 'toggleCanister' };
+      canisterGroup.add(canWallMesh);
+
+      const canBaseMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(CAN_W - 0.08, 0.10, CAN_D - 0.08),
+        matSeafoamInner
+      );
+      canBaseMesh.position.y = 0.05;
+      canBaseMesh.userData = { action: 'toggleCanister' };
+      canisterGroup.add(canBaseMesh);
+
+      // Warm Meal Contents inside the Hot Canister
+      const soupMesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.42, 0.40, 0.42, 20),
+        new THREE.MeshStandardMaterial({ color: 0xd49a3a, roughness: 0.35 })
+      );
+      soupMesh.position.y = 0.34;
+      soupMesh.userData = { action: 'toggleCanisterLid' };
+      canisterGroup.add(soupMesh);
+
+      // Openable Hot Canister Lid Group
+      const CAN_LID_OPEN_POS = new THREE.Vector3(0, CAN_H + 0.56, -0.58);
+      const canLidGroup = new THREE.Group();
+      canLidGroup.position.set(0, CAN_H + 0.03, 0);
+      canisterGroup.add(canLidGroup);
+
+      const canLidShape = createRoundedRectShape(CAN_W + 0.04, CAN_D + 0.04, 0.23);
+      const canLidGeo = new THREE.ExtrudeGeometry(canLidShape, {
+        depth: 0.11,
+        bevelEnabled: true,
+        bevelThickness: 0.025,
+        bevelSize: 0.025,
+        bevelSegments: 3
+      });
+      canLidGeo.rotateX(-Math.PI / 2);
+      const canLidMesh = new THREE.Mesh(canLidGeo, matSeafoamInner);
+      canLidMesh.castShadow = true;
+      canLidMesh.userData = { action: 'toggleCanisterLid' };
+      canLidGroup.add(canLidMesh);
+
+      const canSealRing = new THREE.Mesh(
+        new THREE.BoxGeometry(CAN_W - 0.12, 0.06, CAN_D - 0.12),
+        matDarkTeal
+      );
+      canSealRing.position.y = -0.02;
+      canSealRing.userData = { action: 'toggleCanisterLid' };
+      canLidGroup.add(canSealRing);
+
+      // Thermal X-Ray Overlay Zones
+      const thermalZonesGroup = new THREE.Group();
+      thermalZonesGroup.visible = false;
+      bentoRoot.add(thermalZonesGroup);
+
+      const hotZoneMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(CAN_W + 0.14, CAN_H + 0.12, CAN_D + 0.14),
+        new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.32, wireframe: false })
+      );
+      hotZoneMesh.position.set(CAN_SLOT_POS.x, FLOOR_T + CAN_H / 2 + 0.04, CAN_SLOT_POS.z);
+      thermalZonesGroup.add(hotZoneMesh);
+
+      const coldZoneMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(ICE_W + 0.22, ICE_H + 0.18, ICE_D + 0.22),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.35 })
+      );
+      coldZoneMesh.position.set(ICE_SLOT_POS.x, ICE_Y, ICE_Z);
+      thermalZonesGroup.add(coldZoneMesh);
+
+      // ==========================================
+      // 5. FREEFORM DIVIDER CONSTANTS & 3 SIZES
+      // ==========================================
+      const DIV_H = 0.76;
+      const DIV_THICK = 0.10;
+      const DIV_Y = FLOOR_T + DIV_H / 2 + 0.02;
+      const WALL_CLEARANCE = 0.015;
+      const USABLE_W = INNER_W - WALL_CLEARANCE * 2;
+      const USABLE_D = INNER_D - WALL_CLEARANCE * 2;
+
+      const DIVIDER_SIZES = {
+        S: {
+          code: 'S',
+          name: 'Small',
+          horizLength: USABLE_W * 0.26,
+          vertLength: USABLE_D * 0.50
+        },
+        M: {
+          code: 'M',
+          name: 'Medium',
+          horizLength: USABLE_W * 0.50,
+          vertLength: USABLE_D * 0.99
+        },
+        L: {
+          code: 'L',
+          name: 'Large',
+          horizLength: USABLE_W * 0.99,
+          vertLength: USABLE_D * 0.99
+        }
+      };
+
+      const dividersGroup = new THREE.Group();
+      bentoRoot.add(dividersGroup);
+
+      // Invisible floor plane for raycasting smooth 3D dragging
+      const dragPlaneGeo = new THREE.PlaneGeometry(INNER_W, INNER_D);
+      dragPlaneGeo.rotateX(-Math.PI / 2);
+      const dragPlaneMesh = new THREE.Mesh(
+        dragPlaneGeo,
+        new THREE.MeshBasicMaterial({ visible: false })
+      );
+      dragPlaneMesh.position.y = DIV_Y;
+      bentoRoot.add(dragPlaneMesh);
+
+      let nextDividerNum = 1;
+
+      // Clamps & snaps Small, Medium, or Large dividers cleanly inside the tray
+      // Large (L) spans full wall-to-wall horizontally; Medium (M) spans full top-to-bottom vertically; Small (S) spans top/bottom wall to middle vertically
+      function constrainDivider(divData) {
+        const sizeSpec = DIVIDER_SIZES[divData.sizeKey] || DIVIDER_SIZES.M;
+        const isHoriz = divData.orientation === 'horizontal';
+        divData.desiredLength = isHoriz ? sizeSpec.horizLength : sizeSpec.vertLength;
+
+        const halfThick = DIV_THICK / 2;
+        const maxX = INNER_W / 2 - WALL_CLEARANCE;
+        const maxZ = INNER_D / 2 - WALL_CLEARANCE;
+
+        // Canister occupies X: [-2.05, -0.68], Z: [-1.34, -0.14] when installed (leaves Z = 0 centerline completely clear!)
+        const canRight = -0.66;
+        const canBottom = -0.12;
+
+        if (isHoriz) {
+          // Allow free Z placement anywhere from top wall to bottom wall
+          divData.z = Math.max(-maxZ + halfThick, Math.min(maxZ - halfThick, divData.z));
+
+          const overlapsCanisterZ = !state.canisterRemoved && (divData.z - halfThick < canBottom);
+          const minAllowedX = overlapsCanisterZ ? canRight : -maxX;
+          const maxAllowedX = maxX;
+          const availSpan = Math.max(0.55, maxAllowedX - minAllowedX);
+
+          // Automatically trim span only when passing beside the installed canister, otherwise allow full desired length
+          divData.length = Math.min(divData.desiredLength, availSpan);
+          const halfLen = divData.length / 2;
+          divData.x = Math.max(minAllowedX + halfLen, Math.min(maxAllowedX - halfLen, divData.x));
+
+          // Gentle magnetic snap to left half, right half, or center (without locking X)
+          const leftHalfCenter = -maxX + halfLen;
+          const rightHalfCenter = maxX - halfLen;
+          const snapThreshold = 0.12;
+          if (!overlapsCanisterZ && Math.abs(divData.x - leftHalfCenter) < snapThreshold) {
+            divData.x = leftHalfCenter;
+          } else if (Math.abs(divData.x - rightHalfCenter) < snapThreshold) {
+            divData.x = rightHalfCenter;
+          } else if (!overlapsCanisterZ && Math.abs(divData.x) < snapThreshold) {
+            divData.x = 0;
+          }
+        } else {
+          // Vertical orientation (runs along Z axis): allow free X placement anywhere across the tray
+          divData.x = Math.max(-maxX + halfThick, Math.min(maxX - halfThick, divData.x));
+
+          const overlapsCanisterX = !state.canisterRemoved && (divData.x - halfThick < canRight);
+          const minAllowedZ = overlapsCanisterX ? canBottom : -maxZ;
+          const maxAllowedZ = maxZ;
+          const availSpan = Math.max(0.50, maxAllowedZ - minAllowedZ);
+
+          // Automatically trim span only when passing below the installed canister, otherwise allow full desired length
+          divData.length = Math.min(divData.desiredLength, availSpan);
+          const halfLen = divData.length / 2;
+          divData.z = Math.max(minAllowedZ + halfLen, Math.min(maxAllowedZ - halfLen, divData.z));
+
+          // Gentle magnetic snap to top half, bottom half, or middle (without locking Z)
+          const topHalfCenter = -maxZ + halfLen;
+          const bottomHalfCenter = maxZ - halfLen;
+          const zSnapThreshold = 0.12;
+          if (!overlapsCanisterX && Math.abs(divData.z - topHalfCenter) < zSnapThreshold) {
+            divData.z = topHalfCenter;
+          } else if (Math.abs(divData.z - bottomHalfCenter) < zSnapThreshold) {
+            divData.z = bottomHalfCenter;
+          } else if (!overlapsCanisterX && Math.abs(divData.z) < zSnapThreshold) {
+            divData.z = 0;
+          }
+
+          // Gentle magnetic snap to horizontal centerline (x = 0)
+          if (Math.abs(divData.x) < 0.10) {
+            divData.x = 0;
+          }
+        }
+      }
+
+      function rebuildDividerMesh(divData) {
+        if (divData.meshGroup) {
+          dividersGroup.remove(divData.meshGroup);
+        }
+
+        constrainDivider(divData);
+
+        const isHoriz = divData.orientation === 'horizontal';
+        const w = isHoriz ? divData.length : DIV_THICK;
+        const d = isHoriz ? DIV_THICK : divData.length;
+
+        const g = new THREE.Group();
+        g.position.set(divData.x, DIV_Y, divData.z);
+
+        const isSelected = state.selectedDividerId === divData.id;
+        const bodyMat = matSeafoam.clone();
+        if (isSelected) {
+          bodyMat.emissive.setHex(0xd49a3a);
+          bodyMat.emissiveIntensity = 0.25;
+        }
+
+        const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(w, DIV_H, d), bodyMat);
+        bodyMesh.castShadow = true;
+        bodyMesh.receiveShadow = true;
+        bodyMesh.userData = { dividerId: divData.id };
+        g.add(bodyMesh);
+
+        // Top grip rim (ochre gold highlight when selected, deep teal otherwise)
+        const lipMat = isSelected ? new THREE.MeshStandardMaterial({ color: 0xd49a3a, roughness: 0.3 }) : matDarkTeal;
+        const lipMesh = new THREE.Mesh(
+          new THREE.BoxGeometry(w + 0.015, 0.065, d + 0.015),
+          lipMat
+        );
+        lipMesh.position.y = DIV_H / 2 + 0.01;
+        lipMesh.userData = { dividerId: divData.id };
+        g.add(lipMesh);
+
+        dividersGroup.add(g);
+        divData.meshGroup = g;
+        divData.bodyMat = bodyMat;
+      }
+
+      function createFreeformDivider({ x = 0, z = 0, orientation = 'vertical', sizeKey = 'M' }) {
+        const spec = DIVIDER_SIZES[sizeKey] || DIVIDER_SIZES.M;
+        const id = `div_${nextDividerNum++}`;
+        const initialLen = orientation === 'horizontal' ? spec.horizLength : spec.vertLength;
+        const divData = {
+          id,
+          label: `${spec.name} Wall`,
+          sizeKey: spec.code,
+          x,
+          z,
+          orientation,
+          desiredLength: initialLen,
+          length: initialLen,
+          meshGroup: null,
+          bodyMat: null
+        };
+        state.dividers.push(divData);
+        rebuildDividerMesh(divData);
+        return divData;
+      }
+
+      function clearAllDividers() {
+        state.dividers.forEach(d => {
+          if (d.meshGroup) dividersGroup.remove(d.meshGroup);
+        });
+        state.dividers = [];
+        state.selectedDividerId = null;
+      }
+
+      function loadDividerPreset(presetName) {
+        clearAllDividers();
+        const rightHalfCenterX = (INNER_W / 2 - WALL_CLEARANCE) - DIVIDER_SIZES.M.horizLength / 2;
+        const topHalfCenterZ = -(INNER_D / 2 - WALL_CLEARANCE) + DIVIDER_SIZES.S.vertLength / 2;
+        const bottomHalfCenterZ = (INNER_D / 2 - WALL_CLEARANCE) - DIVIDER_SIZES.S.vertLength / 2;
+        if (presetName === 'standard') {
+          // Full-width Large horizontal divider across the tray + Small vertical sub-dividers touching top/bottom walls to middle
+          createFreeformDivider({ x: 0.0, z: 0.0, orientation: 'horizontal', sizeKey: 'L' });
+          createFreeformDivider({ x: 0.0, z: topHalfCenterZ, orientation: 'vertical', sizeKey: 'S' });
+          createFreeformDivider({ x: 0.85, z: bottomHalfCenterZ, orientation: 'vertical', sizeKey: 'S' });
+        } else if (presetName === 'snack') {
+          // 6-Snack Box: Full-width Large divider + half-tray Medium divider + Small vertical walls reaching middle
+          createFreeformDivider({ x: 0.0, z: 0.0, orientation: 'horizontal', sizeKey: 'L' });
+          createFreeformDivider({ x: rightHalfCenterX, z: topHalfCenterZ, orientation: 'horizontal', sizeKey: 'M' });
+          createFreeformDivider({ x: 0.0, z: topHalfCenterZ, orientation: 'vertical', sizeKey: 'S' });
+          createFreeformDivider({ x: -0.65, z: bottomHalfCenterZ, orientation: 'vertical', sizeKey: 'S' });
+          createFreeformDivider({ x: 0.75, z: bottomHalfCenterZ, orientation: 'vertical', sizeKey: 'S' });
+        } else if (presetName === 'open') {
+          // Empty open tray
+        }
+        state.selectedDividerId = null;
+        refreshAllDividers();
+      }
+
+      function deselectDivider() {
+        if (!state.selectedDividerId) return;
+        state.selectedDividerId = null;
+        refreshAllDividers();
+        showCallout('Deselected divider — click any wall in 3D or 2D to select it again.');
+      }
+
+      function refreshAllDividers() {
+        state.dividers.forEach(d => rebuildDividerMesh(d));
+        renderBlueprint2D();
+        syncSizeSelectorButtons();
+      }
+
+      function syncSizeSelectorButtons() {
+        const sel = state.dividers.find(d => d.id === state.selectedDividerId);
+        document.querySelectorAll('.size-toggle-btn').forEach(btn => {
+          const btnSize = btn.getAttribute('data-set-size');
+          if (sel && sel.sizeKey === btnSize) {
+            btn.classList.add('bg-[#1A6B76]', 'text-white');
+            btn.classList.remove('text-[#1A6B76]', 'hover:bg-[#E3F3F2]');
+          } else {
+            btn.classList.remove('bg-[#1A6B76]', 'text-white');
+            btn.classList.add('text-[#1A6B76]', 'hover:bg-[#E3F3F2]');
+          }
+        });
+      }
+
+      // --- 2D INTERACTIVE FREEFORM BLUEPRINT SYNC ---
+      const blueprintTray = document.getElementById('blueprint-tray');
+      const blueprintDividersLayer = document.getElementById('blueprint-dividers-layer');
+      const blueprintCanisterZone = document.getElementById('blueprint-canister-zone');
+      const selectedDivLabel = document.getElementById('selected-div-label');
+
+      function renderBlueprint2D() {
+        blueprintCanisterZone.style.opacity = state.canisterRemoved ? '0' : '1';
+        blueprintDividersLayer.innerHTML = '';
+
+        const sel = state.dividers.find(d => d.id === state.selectedDividerId);
+        const selSpec = sel ? DIVIDER_SIZES[sel.sizeKey] : null;
+        selectedDivLabel.textContent = sel
+          ? `${selSpec.name} (${sel.sizeKey}) · ${sel.orientation === 'horizontal' ? 'Horiz' : 'Vert'}`
+          : 'Drag walls freely';
+
+        state.dividers.forEach(divData => {
+          const isHoriz = divData.orientation === 'horizontal';
+          const isSelected = state.selectedDividerId === divData.id;
+
+          const leftPct = ((divData.x + INNER_W / 2) / INNER_W) * 100;
+          const topPct = ((divData.z + INNER_D / 2) / INNER_D) * 100;
+          const widthPct = isHoriz ? (divData.length / INNER_W) * 100 : 4.2;
+          const heightPct = isHoriz ? 6.0 : (divData.length / INNER_D) * 100;
+
+          const el = document.createElement('div');
+          el.className = `absolute -translate-x-1/2 -translate-y-1/2 rounded-full cursor-move transition-colors shadow-sm flex items-center justify-center text-[8px] font-extrabold text-white leading-none ${
+            isSelected ? 'bg-[#D49A3A] ring-2 ring-[#1A6B76] z-20' : 'bg-[#1A6B76] hover:bg-[#288996] z-10'
+          }`;
+          el.style.left = `${leftPct}%`;
+          el.style.top = `${topPct}%`;
+          el.style.width = `${widthPct}%`;
+          el.style.height = `${heightPct}%`;
+          el.textContent = divData.sizeKey;
+          el.title = `${DIVIDER_SIZES[divData.sizeKey].name} (${divData.sizeKey}) Wall — Drag to move, Double-click to rotate`;
+
+          // Pointer drag on 2D blueprint
+          el.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+            state.selectedDividerId = divData.id;
+            refreshAllDividers();
+
+            const rect = blueprintTray.getBoundingClientRect();
+            const onMove = (moveEvt) => {
+              const nx = ((moveEvt.clientX - rect.left) / rect.width) * INNER_W - INNER_W / 2;
+              const nz = ((moveEvt.clientY - rect.top) / rect.height) * INNER_D - INNER_D / 2;
+              divData.x = nx;
+              divData.z = nz;
+              rebuildDividerMesh(divData);
+              renderBlueprint2D();
+            };
+            const onUp = () => {
+              window.removeEventListener('pointermove', onMove);
+              window.removeEventListener('pointerup', onUp);
+            };
+            window.addEventListener('pointermove', onMove);
+            window.addEventListener('pointerup', onUp);
+          });
+
+          el.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            divData.orientation = divData.orientation === 'horizontal' ? 'vertical' : 'horizontal';
+            refreshAllDividers();
+            showCallout(`Rotated ${DIVIDER_SIZES[divData.sizeKey].name} Wall to ${divData.orientation} orientation.`);
+          });
+
+          blueprintDividersLayer.appendChild(el);
+        });
+      }
+
+      blueprintTray.addEventListener('pointerdown', (e) => {
+        if (e.target === blueprintTray || e.target === blueprintDividersLayer) {
+          deselectDivider();
+        }
+      });
+
+      // --- E. SAMPLE LUNCH 3D FOOD ITEMS (Toggleable) ---
+      const foodGroup = new THREE.Group();
+      foodGroup.visible = false;
+      bentoRoot.add(foodGroup);
+
+      // Blueberries
+      const berryColors = [0x2b3a67, 0x3a4f8a, 0x1e294b];
+      for (let i = 0; i < 12; i++) {
+        const berry = new THREE.Mesh(
+          new THREE.SphereGeometry(0.11, 12, 12),
+          new THREE.MeshStandardMaterial({ color: berryColors[i % 3], roughness: 0.35 })
+        );
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        berry.position.set(-0.42 + col * 0.22, 0.52, -1.05 + row * 0.24);
+        foodGroup.add(berry);
+      }
+
+      // Kiwi & Strawberry slices
+      for (let i = 0; i < 4; i++) {
+        const kiwi = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.24, 0.24, 0.08, 16),
+          new THREE.MeshStandardMaterial({ color: 0x7cb342, roughness: 0.4 })
+        );
+        kiwi.position.set(0.62 + (i % 2) * 0.22, 0.5 + i * 0.08, -0.82 + Math.floor(i / 2) * 0.36);
+        kiwi.rotation.z = (i % 2 === 0 ? 0.18 : -0.15);
+        foodGroup.add(kiwi);
+
+        const straw = new THREE.Mesh(
+          new THREE.ConeGeometry(0.18, 0.32, 12),
+          new THREE.MeshStandardMaterial({ color: 0xd9383a, roughness: 0.45 })
+        );
+        straw.position.set(1.55 + (i % 2) * 0.28, 0.56, -0.95 + Math.floor(i / 2) * 0.48);
+        straw.rotation.x = Math.PI * 0.35;
+        foodGroup.add(straw);
+      }
+
+      // Artisan Sandwich Halves
+      function createSandwichHalf(x, z) {
+        const sw = new THREE.Group();
+        sw.position.set(x, 0.45, z);
+        const breadMat = new THREE.MeshStandardMaterial({ color: 0xd9a05b, roughness: 0.75 });
+        const lettuceMat = new THREE.MeshStandardMaterial({ color: 0x6ab04c, roughness: 0.55 });
+        const cheeseMat = new THREE.MeshStandardMaterial({ color: 0xf6b93b, roughness: 0.4 });
+
+        const b1 = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.11, 0.92), breadMat);
+        const cheese = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.04, 0.88), cheeseMat);
+        cheese.position.y = 0.08;
+        const lettuce = new THREE.Mesh(new THREE.BoxGeometry(1.16, 0.05, 0.94), lettuceMat);
+        lettuce.position.y = 0.13;
+        const b2 = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.11, 0.92), breadMat);
+        b2.position.y = 0.21;
+
+        sw.add(b1, cheese, lettuce, b2);
+        return sw;
+      }
+      foodGroup.add(createSandwichHalf(-1.25, 0.72));
+      foodGroup.add(createSandwichHalf(0.05, 0.72));
+
+      // Crackers
+      for (let i = 0; i < 4; i++) {
+        const cracker = new THREE.Mesh(
+          new THREE.BoxGeometry(0.55, 0.07, 0.55),
+          new THREE.MeshStandardMaterial({ color: 0xe2b168, roughness: 0.65 })
+        );
+        cracker.position.set(1.48, 0.46 + i * 0.08, 0.72);
+        cracker.rotation.y = i * 0.22;
+        foodGroup.add(cracker);
+      }
+
+      // --- F. HINGED LID + LEAK-PROOF SILICONE GASKET + 4 SNAP LATCHES ---
+      const lidPivot = new THREE.Group();
+      lidPivot.position.set(0, BASE_H, -BOX_D / 2);
+      bentoRoot.add(lidPivot);
+
+      const lidGroup = new THREE.Group();
+      lidGroup.position.set(0, 0, BOX_D / 2);
+      lidPivot.add(lidGroup);
+
+      [-1.3, 1.3].forEach(hx => {
+        const hinge = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.09, 0.09, 0.42, 16),
+          matDarkTeal
+        );
+        hinge.rotation.z = Math.PI / 2;
+        hinge.position.set(hx, 0, -BOX_D / 2);
+        lidGroup.add(hinge);
+      });
+
+      const lidShape = createRoundedRectShape(BOX_W, BOX_D, CORNER_R);
+      const lidExtrude = new THREE.ExtrudeGeometry(lidShape, {
+        depth: LID_H - 0.08,
+        bevelEnabled: true,
+        bevelThickness: 0.08,
+        bevelSize: 0.06,
+        bevelSegments: 5
+      });
+      lidExtrude.rotateX(-Math.PI / 2);
+      const lidMesh = new THREE.Mesh(lidExtrude, matSeafoam);
+      lidMesh.position.y = 0.04;
+      lidMesh.castShadow = true;
+      lidMesh.receiveShadow = true;
+      lidGroup.add(lidMesh);
+
+      const logoPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.55, 0.55),
+        new THREE.MeshBasicMaterial({
+          map: createLogoTexture(),
+          transparent: true,
+          depthWrite: false
+        })
+      );
+      logoPlane.rotation.x = -Math.PI / 2;
+      logoPlane.position.set(BOX_W / 2 - 0.58, LID_H + 0.045, BOX_D / 2 - 0.52);
+      lidGroup.add(logoPlane);
+
+      const gasketOuter = createRoundedRectShape(BOX_W - WALL_T * 1.35, BOX_D - WALL_T * 1.35, CORNER_R - 0.06);
+      const gasketInner = createRoundedRectShape(BOX_W - WALL_T * 2.1, BOX_D - WALL_T * 2.1, CORNER_R - 0.12);
+      gasketOuter.holes.push(gasketInner);
+
+      const gasketGeo = new THREE.ExtrudeGeometry(gasketOuter, {
+        depth: 0.08,
+        bevelEnabled: true,
+        bevelThickness: 0.015,
+        bevelSize: 0.015,
+        bevelSegments: 2
+      });
+      gasketGeo.rotateX(-Math.PI / 2);
+      const gasketMesh = new THREE.Mesh(gasketGeo, matSiliconeGasket);
+      gasketMesh.position.y = -0.03;
+      lidGroup.add(gasketMesh);
+
+      const latches = [];
+      function createSnapLatch(w, h, d, x, y, z, rotAxis, sign) {
+        const latchPivot = new THREE.Group();
+        latchPivot.position.set(x, y, z);
+
+        const shape = createRoundedRectShape(w, h, 0.07);
+        const geo = new THREE.ExtrudeGeometry(shape, {
+          depth: d,
+          bevelEnabled: true,
+          bevelThickness: 0.02,
+          bevelSize: 0.02,
+          bevelSegments: 3
+        });
+        geo.translate(0, 0, -d / 2);
+
+        const mesh = new THREE.Mesh(geo, matDarkTeal);
+        mesh.position.y = -h * 0.25;
+        mesh.castShadow = true;
+        latchPivot.add(mesh);
+
+        lidGroup.add(latchPivot);
+        latches.push({ pivot: latchPivot, axis: rotAxis, sign });
+      }
+
+      createSnapLatch(0.92, 0.42, 0.12, 0, 0.05, BOX_D / 2 + 0.06, 'x', -1);
+      createSnapLatch(0.92, 0.42, 0.12, 0, 0.05, -BOX_D / 2 - 0.06, 'x', 1);
+
+      const leftLatchPivot = new THREE.Group();
+      leftLatchPivot.position.set(-BOX_W / 2 - 0.06, 0.05, 0);
+      const sideLatchShape = createRoundedRectShape(0.82, 0.42, 0.07);
+      const sideLatchGeo = new THREE.ExtrudeGeometry(sideLatchShape, {
+        depth: 0.12,
+        bevelEnabled: true,
+        bevelThickness: 0.02,
+        bevelSize: 0.02,
+        bevelSegments: 3
+      });
+      sideLatchGeo.rotateY(Math.PI / 2);
+      sideLatchGeo.translate(-0.06, -0.1, 0);
+      const leftLatchMesh = new THREE.Mesh(sideLatchGeo, matDarkTeal);
+      leftLatchMesh.castShadow = true;
+      leftLatchPivot.add(leftLatchMesh);
+      lidGroup.add(leftLatchPivot);
+      latches.push({ pivot: leftLatchPivot, axis: 'z', sign: -1 });
+
+      const rightLatchPivot = new THREE.Group();
+      rightLatchPivot.position.set(BOX_W / 2 + 0.06, 0.05, 0);
+      const rightLatchMesh = new THREE.Mesh(sideLatchGeo.clone(), matDarkTeal);
+      rightLatchMesh.castShadow = true;
+      rightLatchPivot.add(rightLatchMesh);
+      lidGroup.add(rightLatchPivot);
+      latches.push({ pivot: rightLatchPivot, axis: 'z', sign: 1 });
+
+      // --- G. MICROWAVE / DISHWASHER PARTICLES ---
+      const particleGroup = new THREE.Group();
+      particleGroup.visible = false;
+      bentoRoot.add(particleGroup);
+
+      const particles = [];
+      const particleGeo = new THREE.SphereGeometry(0.065, 10, 10);
+      for (let i = 0; i < 36; i++) {
+        const pMat = new THREE.MeshBasicMaterial({
+          color: 0xd49a3a,
+          transparent: true,
+          opacity: 0.75
+        });
+        const pMesh = new THREE.Mesh(particleGeo, pMat);
+        pMesh.position.set(
+          (Math.random() - 0.5) * 4.2,
+          0.3 + Math.random() * 1.8,
+          (Math.random() - 0.5) * 2.8
+        );
+        pMesh.userData = {
+          speed: 0.012 + Math.random() * 0.015,
+          phase: Math.random() * Math.PI * 2
+        };
+        particleGroup.add(pMesh);
+        particles.push(pMesh);
+      }
+
+      // ==========================================
+      // 6. 3D RAYCASTING: DRAG DIVIDERS & CLICK CANISTER / ICE PACK
+      // ==========================================
+      const raycaster = new THREE.Raycaster();
+      const pointer = new THREE.Vector2();
+      let pointerDownPos = { x: 0, y: 0 };
+      let draggingDivider = null;
+
+      function updatePointerNDC(e) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      }
+
+      renderer.domElement.addEventListener('pointerdown', (e) => {
+        pointerDownPos = { x: e.clientX, y: e.clientY };
+        updatePointerNDC(e);
+        raycaster.setFromCamera(pointer, camera);
+
+        // Check if user grabbed a divider in 3D
+        const dividerMeshes = [];
+        state.dividers.forEach(d => {
+          if (d.meshGroup) dividerMeshes.push(...d.meshGroup.children);
+        });
+
+        const divHits = raycaster.intersectObjects(dividerMeshes, false);
+        if (divHits.length > 0 && state.lidOpen) {
+          const hitId = divHits[0].object.userData.dividerId;
+          const found = state.dividers.find(d => d.id === hitId);
+          if (found) {
+            draggingDivider = found;
+            state.selectedDividerId = found.id;
+            controls.enabled = false; // Pause camera orbit while dragging divider
+            refreshAllDividers();
+            showCallout(`Dragging ${found.label} — move anywhere inside the tray!`);
+          }
+        }
+      });
+
+      renderer.domElement.addEventListener('pointermove', (e) => {
+        if (!draggingDivider) return;
+        updatePointerNDC(e);
+        raycaster.setFromCamera(pointer, camera);
+
+        const planeHits = raycaster.intersectObject(dragPlaneMesh, false);
+        if (planeHits.length > 0) {
+          const pt = planeHits[0].point;
+          draggingDivider.x = pt.x;
+          draggingDivider.z = pt.z;
+          rebuildDividerMesh(draggingDivider);
+          renderBlueprint2D();
+        }
+      });
+
+      renderer.domElement.addEventListener('pointerup', (e) => {
+        if (draggingDivider) {
+          draggingDivider = null;
+          controls.enabled = true;
+          return;
+        }
+
+        const dist = Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y);
+        if (dist > 6) return;
+
+        updatePointerNDC(e);
+        raycaster.setFromCamera(pointer, camera);
+
+        // Check clicks on canister lid, canister body, or ice pack
+        const moduleTargets = [
+          ...canLidGroup.children,
+          ...canisterGroup.children.filter(c => c !== canLidGroup),
+          ...icePackGroup.children
+        ];
+        const hits = raycaster.intersectObjects(moduleTargets, false);
+        if (hits.length > 0) {
+          const action = hits[0].object.userData.action;
+          if (action === 'toggleCanisterLid') {
+            toggleCanisterLid();
+          } else if (action === 'toggleCanister') {
+            toggleCanisterRemoved();
+          } else if (action === 'toggleIcePack') {
+            toggleIcePackRemoved();
+          }
+          return;
+        }
+
+        // Clicking empty tray/background in 3D deselects any active divider highlight
+        const dividerMeshes = [];
+        state.dividers.forEach(d => {
+          if (d.meshGroup) dividerMeshes.push(...d.meshGroup.children);
+        });
+        const divClickHits = raycaster.intersectObjects(dividerMeshes, false);
+        if (divClickHits.length === 0 && state.selectedDividerId) {
+          deselectDivider();
+        }
+      });
+
+      renderer.domElement.addEventListener('dblclick', (e) => {
+        updatePointerNDC(e);
+        raycaster.setFromCamera(pointer, camera);
+        const dividerMeshes = [];
+        state.dividers.forEach(d => {
+          if (d.meshGroup) dividerMeshes.push(...d.meshGroup.children);
+        });
+        const divHits = raycaster.intersectObjects(dividerMeshes, false);
+        if (divHits.length > 0) {
+          const hitId = divHits[0].object.userData.dividerId;
+          const found = state.dividers.find(d => d.id === hitId);
+          if (found) {
+            found.orientation = found.orientation === 'horizontal' ? 'vertical' : 'horizontal';
+            state.selectedDividerId = found.id;
+            refreshAllDividers();
+            showCallout(`Rotated ${found.label} to ${found.orientation} orientation.`);
+          }
+        }
+      });
+
+      // ==========================================
+      // 7. UI & INTERACTION HANDLERS
+      // ==========================================
+      const calloutText = document.getElementById('callout-text');
+      function showCallout(msg) {
+        calloutText.textContent = msg;
+      }
+
+      // Container Colorway Swatches
+      function applyColorway(key) {
+        const cw = COLORWAYS[key] || COLORWAYS.mint;
+        state.colorway = key;
+        matSeafoam.color.setHex(cw.body);
+        matSeafoamInner.color.setHex(cw.inner);
+        matDarkTeal.color.setHex(cw.accent);
+        matSiliconeGasket.color.setHex(cw.accent);
+        matIcePack.color.setHex(cw.ice);
+        document.getElementById('colorway-name').textContent = cw.name;
+
+        document.querySelectorAll('.swatch-btn').forEach(btn => {
+          if (btn.getAttribute('data-colorway') === key) {
+            btn.classList.add('border-[#1A6B76]', 'ring-2', 'ring-[#D49A3A]', 'scale-110');
+            btn.classList.remove('border-white');
+          } else {
+            btn.classList.remove('border-[#1A6B76]', 'ring-2', 'ring-[#D49A3A]', 'scale-110');
+            btn.classList.add('border-white');
+          }
+        });
+
+        refreshAllDividers();
+      }
+
+      document.querySelectorAll('.swatch-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-colorway');
+          applyColorway(key);
+          showCallout(`Switched container finish to ${COLORWAYS[key].name}!`);
+        });
+      });
+
+      // Download Standalone HTML File Button
+      document.getElementById('btn-download-html').addEventListener('click', () => {
+        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'stashables-3d-explorer.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showCallout('Downloaded stashables-3d-explorer.html — open it in any browser or upload it to your website!');
+      });
+
+      // Copy Full HTML Code for Google Sites Embed (Bypasses file:// blocks!)
+      document.getElementById('btn-copy-embed').addEventListener('click', () => {
+        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const ta = document.createElement('textarea');
+        ta.value = htmlContent;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+
+        const lbl = document.getElementById('copy-embed-label');
+        lbl.textContent = 'Copied! Paste in Google Sites';
+        setTimeout(() => { lbl.textContent = 'Copy for Google Sites'; }, 3500);
+        showCallout('Copied full code! Open sites.google.com → Insert → Embed → Embed Code → Paste & Publish!');
+      });
+
+      // Add Small, Medium, or Large Divider Buttons
+      document.querySelectorAll('.add-size-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!state.lidOpen) setLidState(true);
+          const sizeKey = btn.getAttribute('data-add-size') || 'M';
+          const spec = DIVIDER_SIZES[sizeKey];
+          const newDiv = createFreeformDivider({
+            x: 0.45,
+            z: 0.35,
+            orientation: sizeKey === 'L' ? 'horizontal' : 'vertical',
+            sizeKey
+          });
+          state.selectedDividerId = newDiv.id;
+          refreshAllDividers();
+          showCallout(`Added ${spec.name} (${spec.code}) divider — drag it anywhere in 3D or on the 2D canvas!`);
+        });
+      });
+
+      // Change Size [S / M / L] of Currently Selected Divider
+      document.querySelectorAll('.size-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sel = state.dividers.find(d => d.id === state.selectedDividerId);
+          if (!sel) {
+            showCallout('Select or add a divider first to change its size.');
+            return;
+          }
+          const newSize = btn.getAttribute('data-set-size');
+          const spec = DIVIDER_SIZES[newSize];
+          sel.sizeKey = newSize;
+          sel.label = `${spec.name} Wall`;
+          sel.desiredLength = spec.length;
+          refreshAllDividers();
+          showCallout(`Resized divider to ${spec.name} (${spec.code}) — drag or rotate anywhere!`);
+        });
+      });
+
+      function rotateSelectedDivider() {
+        const sel = state.dividers.find(d => d.id === state.selectedDividerId);
+        if (!sel) {
+          showCallout('Click a divider first to select and rotate it.');
+          return;
+        }
+        state.selectedDividerId = sel.id;
+        sel.orientation = sel.orientation === 'horizontal' ? 'vertical' : 'horizontal';
+        refreshAllDividers();
+        showCallout(`Rotated ${DIVIDER_SIZES[sel.sizeKey].name} (${sel.sizeKey}) divider to ${sel.orientation} orientation.`);
+      }
+
+      document.getElementById('btn-rotate-selected').addEventListener('click', rotateSelectedDivider);
+      document.getElementById('btn-deselect-wall').addEventListener('click', deselectDivider);
+
+      // Keyboard shortcuts: 'R' to rotate selected divider, 'Escape' to deselect
+      window.addEventListener('keydown', (e) => {
+        if (document.activeElement.tagName === 'INPUT') return;
+        if (e.key === 'r' || e.key === 'R') {
+          rotateSelectedDivider();
+        } else if (e.key === 'Escape') {
+          deselectDivider();
+        }
+      });
+
+      document.getElementById('btn-remove-selected').addEventListener('click', () => {
+        const idx = state.dividers.findIndex(d => d.id === state.selectedDividerId);
+        if (idx < 0) {
+          showCallout('Click a divider first to select and remove it.');
+          return;
+        }
+        const removed = state.dividers.splice(idx, 1)[0];
+        if (removed.meshGroup) dividersGroup.remove(removed.meshGroup);
+        state.selectedDividerId = null;
+        refreshAllDividers();
+        showCallout(`Removed ${DIVIDER_SIZES[removed.sizeKey].name} (${removed.sizeKey}) divider.`);
+      });
+
+      // Layout Presets
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.preset-btn').forEach(b => {
+            b.classList.remove('bg-[#1A6B76]', 'text-white');
+            b.classList.add('bg-[#E3F3F2]', 'text-[#1A6B76]');
+          });
+          btn.classList.remove('bg-[#E3F3F2]', 'text-[#1A6B76]');
+          btn.classList.add('bg-[#1A6B76]', 'text-white');
+
+          const preset = btn.getAttribute('data-preset');
+          if (!state.lidOpen) setLidState(true);
+          loadDividerPreset(preset);
+
+          if (preset === 'standard') {
+            showCallout('Loaded "Standard Bento" layout — drag any wall to customize.');
+          } else if (preset === 'snack') {
+            showCallout('Loaded "6-Snack Box" layout — drag or rotate any divider freely.');
+          } else {
+            showCallout('Cleared dividers for an open entrée layout — click "+ Add Wall" anytime.');
+          }
+        });
+      });
+
+      // Open / Close Main Container Lid
+      const lidBtnLabel = document.getElementById('lid-btn-label');
+      function setLidState(open) {
+        state.lidOpen = open;
+        state.lidAngle = open ? 1.48 : 0;
+        lidBtnLabel.textContent = open ? 'Close Lid' : 'Open Lid';
+      }
+
+      document.getElementById('btn-toggle-lid').addEventListener('click', () => {
+        setLidState(!state.lidOpen);
+        showCallout(state.lidOpen
+          ? 'Main lid opened — drag dividers or click the canister & ice pack!'
+          : 'Main lid closed — all 4 dark teal snap latches engaged!');
+      });
+
+      // Fill Sample Lunch Toggle
+      const foodBtnLabel = document.getElementById('food-btn-label');
+      document.getElementById('btn-toggle-food').addEventListener('click', () => {
+        state.showFood = !state.showFood;
+        foodGroup.visible = state.showFood;
+        if (state.showFood && !state.lidOpen) setLidState(true);
+        foodBtnLabel.textContent = state.showFood ? 'Clear Sample Lunch' : 'Fill Sample Lunch';
+        showCallout(state.showFood
+          ? 'Populated tray with berries, kiwi, strawberries, sandwich halves & crackers!'
+          : 'Cleared sample lunch items.');
+      });
+
+      // Remove / Re-insert Slim Ice Pack
+      function toggleIcePackRemoved() {
+        state.icePackRemoved = !state.icePackRemoved;
+        document.getElementById('icepack-status-badge').textContent = state.icePackRemoved ? 'Insert Back' : 'Remove';
+        showCallout(state.icePackRemoved
+          ? 'Removed slim half-width ice pack onto the tabletop beside the lunch container!'
+          : 'Slid slim ice pack back into the right-side cooling slot.');
+      }
+      document.getElementById('btn-slide-icepack').addEventListener('click', toggleIcePackRemoved);
+
+      // Remove / Re-insert Square Hot Food Canister
+      function toggleCanisterRemoved() {
+        if (!state.canisterRemoved && !state.lidOpen) setLidState(true);
+        state.canisterRemoved = !state.canisterRemoved;
+        document.getElementById('canister-status-badge').textContent = state.canisterRemoved ? 'Place Inside' : 'Remove';
+        refreshAllDividers(); // Updates available divider span when canister is removed!
+        showCallout(state.canisterRemoved
+          ? 'Removed Hot Food Canister onto the table — full tray space is now open for dividers!'
+          : 'Placed Hot Food Canister back inside the upper-left insulated bay.');
+      }
+      document.getElementById('btn-lift-canister').addEventListener('click', toggleCanisterRemoved);
+
+      // Open / Close Hot Food Canister Lid
+      function toggleCanisterLid() {
+        if (!state.canisterRemoved && !state.lidOpen) setLidState(true);
+        state.canisterLidOpen = !state.canisterLidOpen;
+        document.getElementById('canister-lid-badge').textContent = state.canisterLidOpen ? 'Close Lid' : 'Open Lid';
+        showCallout(state.canisterLidOpen
+          ? 'Opened Hot Food Canister lid — inspect the insulated interior & warm meal!'
+          : 'Sealed Hot Food Canister lid shut to lock in heat.');
+      }
+      document.getElementById('btn-canister-lid').addEventListener('click', toggleCanisterLid);
+
+      // Feature Tabs Navigation
+      document.querySelectorAll('.tab-btn').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(t => {
+            t.classList.remove('border-2', 'border-[#1A6B76]', 'bg-[#E3F3F2]/70');
+            t.classList.add('border', 'border-[#9DD1CE]/60', 'bg-[#F8F9F8]');
+          });
+          tab.classList.remove('border', 'border-[#9DD1CE]/60', 'bg-[#F8F9F8]');
+          tab.classList.add('border-2', 'border-[#1A6B76]', 'bg-[#E3F3F2]/70');
+
+          const target = tab.getAttribute('data-tab');
+          document.querySelectorAll('.feature-panel').forEach(p => p.classList.add('hidden'));
+          document.getElementById(`panel-${target}`).classList.remove('hidden');
+
+          if (target === 'thermal') {
+            animateCameraTo(0.2, 5.6, 8.6, 0, 0.5, 0);
+            showCallout('Remove the slim ice pack or hot food canister, and open the canister lid!');
+          } else if (target === 'seal') {
+            setLidState(true);
+            state.highlightGasket = true;
+            document.getElementById('gasket-badge').textContent = 'Glowing';
+            animateCameraTo(0.2, 5.2, 6.2, 0, 1.2, -0.4);
+            showCallout('Leak-Proof Silicone Gasket highlighted around the inner lid rim.');
+          } else if (target === 'care') {
+            showCallout('Test Microwave-Safe heating or Top-Rack Dishwasher rinse simulations.');
+          } else {
+            state.highlightGasket = false;
+            document.getElementById('gasket-badge').textContent = 'Highlight';
+            animateCameraTo(0.2, 6.4, 7.6, 0, 0.6, 0);
+          }
+        });
+      });
+
+      // Thermal X-Ray View
+      document.getElementById('btn-xray-thermal').addEventListener('click', () => {
+        state.xrayThermal = !state.xrayThermal;
+        thermalZonesGroup.visible = state.xrayThermal;
+        matSeafoam.opacity = state.xrayThermal ? 0.42 : 1.0;
+        matSeafoamInner.opacity = state.xrayThermal ? 0.42 : 1.0;
+        const badge = document.getElementById('xray-status-badge');
+        badge.textContent = state.xrayThermal ? 'ON' : 'OFF';
+        badge.className = state.xrayThermal
+          ? 'px-2.5 py-1 rounded-lg bg-[#D49A3A] text-white text-[11px] font-bold'
+          : 'px-2.5 py-1 rounded-lg bg-slate-200 text-[#1A6B76] text-[11px] font-bold';
+        showCallout(state.xrayThermal
+          ? 'Thermal X-Ray ON: Amber shows warm canister insulation; Cyan shows slim ice-pack cooling slot.'
+          : 'Thermal X-Ray OFF.');
+      });
+
+      // Leak-Proof Seal Controls
+      document.getElementById('btn-highlight-gasket').addEventListener('click', () => {
+        state.highlightGasket = !state.highlightGasket;
+        if (state.highlightGasket && !state.lidOpen) setLidState(true);
+        document.getElementById('gasket-badge').textContent = state.highlightGasket ? 'Glowing' : 'Highlight';
+        showCallout(state.highlightGasket
+          ? 'Silicone perimeter gasket pulsing — compresses tightly against the tray lip when latched.'
+          : 'Gasket highlight turned off.');
+      });
+
+      document.getElementById('btn-latch-test').addEventListener('click', () => {
+        setLidState(false);
+        animateCameraTo(0.0, 2.4, 6.8, 0, 0.75, 0);
+        showCallout('4-Latch Compression Lock engaged! Front, back, and side latches seal the lid tight.');
+      });
+
+      // Microwave & Dishwasher Simulations
+      document.getElementById('btn-sim-microwave').addEventListener('click', () => {
+        state.simMode = state.simMode === 'microwave' ? 'none' : 'microwave';
+        if (state.simMode === 'microwave') {
+          setLidState(true);
+          state.icePackRemoved = true;
+          document.getElementById('icepack-status-badge').textContent = 'Insert Back';
+          particleGroup.visible = true;
+          particles.forEach(p => p.material.color.setHex(0xd49a3a));
+          showCallout('Microwave-Safe Mode: Lid opened & slim ice pack removed. Gentle warm heat waves active!');
+        } else {
+          particleGroup.visible = false;
+          showCallout('Simulation stopped.');
+        }
+      });
+
+      document.getElementById('btn-sim-dishwasher').addEventListener('click', () => {
+        state.simMode = state.simMode === 'dishwasher' ? 'none' : 'dishwasher';
+        if (state.simMode === 'dishwasher') {
+          setLidState(true);
+          particleGroup.visible = true;
+          particles.forEach(p => p.material.color.setHex(0x38bdf8));
+          showCallout('Top-Rack Dishwasher Mode: BPA-free container, canister & dividers sparkling clean!');
+        } else {
+          particleGroup.visible = false;
+          showCallout('Simulation stopped.');
+        }
+      });
+
+      // Exploded View Slider
+      const explodeSlider = document.getElementById('explode-slider');
+      const explodeVal = document.getElementById('explode-val');
+      explodeSlider.addEventListener('input', (e) => {
+        const val = Number(e.target.value);
+        state.explodeAmount = val / 100;
+        explodeVal.textContent = `${val}%`;
+        if (val > 10 && !state.lidOpen) {
+          setLidState(true);
+        }
+        if (val > 0) {
+          showCallout(`Exploded View (${val}%): Inspecting lid, silicone gasket, dividers, canister & slim ice pack.`);
+        }
+      });
+
+      // Camera Angle Presets
+      let camAnim = null;
+      function animateCameraTo(px, py, pz, tx, ty, tz) {
+        camAnim = {
+          startPos: camera.position.clone(),
+          endPos: new THREE.Vector3(px, py, pz),
+          startTarget: controls.target.clone(),
+          endTarget: new THREE.Vector3(tx, ty, tz),
+          t: 0
+        };
+      }
+
+      document.querySelectorAll('.cam-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.cam-btn').forEach(b => {
+            b.classList.remove('bg-[#1A6B76]', 'text-white');
+            b.classList.add('text-[#1A6B76]');
+          });
+          btn.classList.remove('text-[#1A6B76]');
+          btn.classList.add('bg-[#1A6B76]', 'text-white');
+
+          const view = btn.getAttribute('data-cam');
+          if (view === 'hero') animateCameraTo(0.2, 6.4, 7.8, 0, 0.7, 0);
+          if (view === 'top') {
+            setLidState(true);
+            animateCameraTo(0, 8.8, 1.3, 0, 0.5, 0);
+          }
+          if (view === 'icepack') {
+            animateCameraTo(6.8, 3.0, 4.3, 1.4, 0.35, ICE_Z);
+          }
+          if (view === 'front') {
+            setLidState(false);
+            animateCameraTo(0, 2.2, 6.9, 0, 0.7, 0);
+          }
+        });
+      });
+
+      // Reset All Button
+      document.getElementById('btn-reset-all').addEventListener('click', () => {
+        setLidState(true);
+        state.icePackRemoved = false;
+        document.getElementById('icepack-status-badge').textContent = 'Remove';
+        state.canisterRemoved = false;
+        document.getElementById('canister-status-badge').textContent = 'Remove';
+        state.canisterLidOpen = false;
+        document.getElementById('canister-lid-badge').textContent = 'Open Lid';
+        state.explodeAmount = 0;
+        explodeSlider.value = 0;
+        explodeVal.textContent = '0%';
+        state.xrayThermal = false;
+        thermalZonesGroup.visible = false;
+        matSeafoam.opacity = 1.0;
+        matSeafoamInner.opacity = 1.0;
+        state.highlightGasket = false;
+        state.simMode = 'none';
+        particleGroup.visible = false;
+        applyColorway('mint');
+        loadDividerPreset('standard');
+        animateCameraTo(0.2, 6.4, 7.8, 0, 0.7, 0);
+        showCallout('Reset 3D Stashables Lunch Container to default state.');
+      });
+
+      // Initialize default "Standard Bento" divider layout
+      loadDividerPreset('standard');
+
+      // ==========================================
+      // 8. RESPONSIVE RESIZE & ANIMATION LOOP
+      // ==========================================
+      window.addEventListener('resize', () => {
+        if (!container.clientWidth || !container.clientHeight) return;
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      });
+
+      const clock = new THREE.Clock();
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const elapsed = clock.getElapsedTime();
+
+        // Smooth camera transitions
+        if (camAnim) {
+          camAnim.t += 0.045;
+          const ease = 1 - Math.pow(1 - Math.min(camAnim.t, 1), 3);
+          camera.position.lerpVectors(camAnim.startPos, camAnim.endPos, ease);
+          controls.target.lerpVectors(camAnim.startTarget, camAnim.endTarget, ease);
+          if (camAnim.t >= 1) camAnim = null;
+        }
+
+        // Smooth Main Lid Opening/Closing + Exploded Offset
+        state.currentLidAngle += (state.lidAngle - state.currentLidAngle) * 0.1;
+        lidPivot.rotation.x = -state.currentLidAngle;
+        lidPivot.position.y = BASE_H + state.explodeAmount * 1.45;
+        gasketMesh.position.y = -0.03 - state.explodeAmount * 0.45;
+
+        // Smooth 4-Latch Snap Rotation
+        const latchSnap = state.currentLidAngle < 0.12 ? 0 : 0.42;
+        latches.forEach(l => {
+          if (l.axis === 'x') {
+            l.pivot.rotation.x += (latchSnap * l.sign - l.pivot.rotation.x) * 0.15;
+          } else {
+            l.pivot.rotation.z += (latchSnap * l.sign - l.pivot.rotation.z) * 0.15;
+          }
+        });
+
+        // Smooth Slim Ice Pack Removal / Insertion + Exploded Offset
+        const targetIcePos = state.icePackRemoved
+          ? ICE_REMOVED_POS
+          : new THREE.Vector3(ICE_SLOT_POS.x + state.explodeAmount * 2.1, ICE_SLOT_POS.y, ICE_SLOT_POS.z);
+        icePackGroup.position.lerp(targetIcePos, 0.12);
+        const targetIceRotY = state.icePackRemoved ? 0.25 : 0;
+        icePackGroup.rotation.y += (targetIceRotY - icePackGroup.rotation.y) * 0.12;
+
+        // Smooth Hot Food Canister Removal / Insertion + Exploded Offset
+        const targetCanPos = state.canisterRemoved
+          ? CAN_REMOVED_POS
+          : new THREE.Vector3(CAN_SLOT_POS.x, CAN_SLOT_POS.y + state.explodeAmount * 1.15, CAN_SLOT_POS.z);
+        canisterGroup.position.lerp(targetCanPos, 0.12);
+
+        // Smooth Hot Food Canister Lid Opening / Closing
+        const targetCanLidPos = state.canisterLidOpen
+          ? CAN_LID_OPEN_POS
+          : new THREE.Vector3(0, CAN_H + 0.03 + state.explodeAmount * 0.65, 0);
+        canLidGroup.position.lerp(targetCanLidPos, 0.14);
+        const targetCanLidRotX = state.canisterLidOpen ? -0.68 : 0;
+        canLidGroup.rotation.x += (targetCanLidRotX - canLidGroup.rotation.x) * 0.14;
+
+        // Exploded Y offset for freeform dividers
+        state.dividers.forEach(d => {
+          if (d.meshGroup) {
+            d.meshGroup.position.y = DIV_Y + state.explodeAmount * 0.75;
+            d.bodyMat.opacity = state.xrayThermal ? 0.42 : 1.0;
+          }
+        });
+
+        // Silicone Gasket Pulse Glow
+        if (state.highlightGasket) {
+          matSiliconeGasket.emissive.setHex(0xd49a3a);
+          matSiliconeGasket.emissiveIntensity = 0.45 + Math.sin(elapsed * 5) * 0.35;
+        } else {
+          matSiliconeGasket.emissiveIntensity *= 0.85;
+        }
+
+        // Microwave / Dishwasher Particle Animation
+        if (particleGroup.visible) {
+          particles.forEach(p => {
+            p.position.y += p.userData.speed;
+            p.position.x += Math.sin(elapsed * 3 + p.userData.phase) * 0.005;
+            if (p.position.y > 2.3) p.position.y = 0.35;
+          });
+        }
+
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      animate();
+    });
+  </script>
+
+</body></html>
